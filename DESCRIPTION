@@ -1,0 +1,19 @@
+Package: GENIE3
+Type: Package
+Title: GEne Network Inference with Ensemble of trees
+Version: 0.99.0
+Date: 2016-10
+Author: Van Anh Huynh-Thu, Sara Aibar, Pierre Geurts
+Maintainer: Van Anh Huynh-Thu <vahuynh@ulg.ac.be>
+Description: This package implements the GENIE3 and tlGENIE3 algorithms for inferring gene
+    regulatory networks from expression data.
+License: GPL (>= 2)
+LazyData: TRUE
+Imports: stats, utils, foreach, doRNG, doParallel, reshape2, testthat
+NeedsCompilation: yes
+RoxygenNote: 5.0.1
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr
+biocViews: NetworkInference, SystemsBiology, DecisionTree, Regression,
+        Network, GraphAndNetwork, GeneExpression
+Packaged: 2016-11-04 15:29:03 UTC; vananh
