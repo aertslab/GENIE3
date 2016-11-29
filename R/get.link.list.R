@@ -1,14 +1,14 @@
 #' @title get.link.list
 #' 
-#' @description \code{get.link.list} Converts the weight matrix, as returned by \code{\link{GENIE3}} or \code{\link{tlGENIE3}}, to a sorted list of regulatory links (most likely links first).
+#' @description \code{get.link.list} Converts the weight matrix, as returned by \code{\link{GENIE3}}, to a sorted list of regulatory links (most likely links first).
 #' 
-#' @param weight.matrix Weighted adjacency matrix as returned by \code{\link{GENIE3}} or \code{\link{tlGENIE3}}.
+#' @param weight.matrix Weighted adjacency matrix as returned by \code{\link{GENIE3}}.
 #' @param report.max Maximum number of links to report. The default value NULL means that all the links are reported.
 #' @param threshold Only links with a weight above the threshold are reported. Default: threshold = 0, i.e. all the links are reported.
 #' 
 #' @return List of regulatory links in a data frame. Each line of the data frame corresponds to a link. The first column is the regulatory gene, the second column is the target gene, and the third column is the weight of the link.
 #'
-#' @seealso \code{\link{GENIE3}}, \code{\link{tlGENIE3}}
+#' @seealso \code{\link{GENIE3}}
 #'
 #' @examples
 #' ## Generate fake expression matrix

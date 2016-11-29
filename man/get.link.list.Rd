@@ -7,7 +7,7 @@
 get.link.list(weight.matrix, report.max = NULL, threshold = 0)
 }
 \arguments{
-\item{weight.matrix}{Weighted adjacency matrix as returned by \code{\link{GENIE3}} or \code{\link{tlGENIE3}}.}
+\item{weight.matrix}{Weighted adjacency matrix as returned by \code{\link{GENIE3}}.}
 
 \item{report.max}{Maximum number of links to report. The default value NULL means that all the links are reported.}
 
@@ -17,7 +17,7 @@ get.link.list(weight.matrix, report.max = NULL, threshold = 0)
 List of regulatory links in a data frame. Each line of the data frame corresponds to a link. The first column is the regulatory gene, the second column is the target gene, and the third column is the weight of the link.
 }
 \description{
-\code{get.link.list} Converts the weight matrix, as returned by \code{\link{GENIE3}} or \code{\link{tlGENIE3}}, to a sorted list of regulatory links (most likely links first).
+\code{get.link.list} Converts the weight matrix, as returned by \code{\link{GENIE3}}, to a sorted list of regulatory links (most likely links first).
 }
 \examples{
 ## Generate fake expression matrix
@@ -33,6 +33,6 @@ link.list <- get.link.list(weight.matrix)
 head(link.list)
 }
 \seealso{
-\code{\link{GENIE3}}, \code{\link{tlGENIE3}}
+\code{\link{GENIE3}}
 }
 

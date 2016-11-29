@@ -13,16 +13,11 @@ output:
   pdf_document:
     toc: yes
 ---
-This is the documentation for the R implementation of GENIE3 and tlGENIE3.
+This is the documentation for the R implementation of GENIE3.
 
 The GENIE3 method is described in:
 
 > Huynh-Thu V. A., Irrthum A., Wehenkel L., and Geurts P. (2010) Inferring regulatory networks from expression data using tree-based methods. *PLoS ONE*, 5(9):e12776.
-
-The tlGENIE3 method is described in:
-
-> Huynh-Thu V. A. and Geurts P. (2016) tlGENIE3: time-lagged GENIE3 for the inference of gene networks from time series expression data. *Bioinformatics*, submitted.
-
 
 ## Format of expression data
 
@@ -38,27 +33,6 @@ head(expr.matrix)
 ```
 
 This matrix contains the expression data of 20 genes from 5 samples. Note that the expression data do not need to be normalised in any way.
-
-The same matrix format must be used for the input argument `SS.data` of the `tlGENIE3()` function.
-
-### Format of time series data
-
-The `tlGENIE3()` function takes as input argument a list of gene expression matrices `TS.data`. Each matrix of `TS.data` must correspond to a time series experiment and must have the same format as a steady-state expression matrix (i.e. a genes x samples matrix where the names of the genes/rows must be specified). The number of time points does not need to be the same in all the experiments, but the genes must be the same. For example, the following command lines generate a fake list of time series data:
-
-```{r}
-data1 <- matrix(sample(1:10, 20, replace=TRUE), nrow=5)
-rownames(data1) <- paste("Gene", 1:5, sep="")
-colnames(data1) <- paste("Time point", 1:4, sep="")
-
-data2 <- matrix(sample(1:10, 25, replace=TRUE), nrow=5)
-rownames(data2) <- paste("Gene", 1:5, sep="")
-colnames(data2) <- paste("Time point", 1:5, sep="")
-
-TS.data <- list(data1,data2) 
-(TS.data)
-```
-
-Here, `TS.data` contains the expression data of 5 genes in 2 time series experiments (4 and 5 time points respectively).
 
 ## How to run GENIE3
 
@@ -137,50 +111,6 @@ weight.matrix <- GENIE3(expr.matrix, ncores=4)
 ```
 
 
-## How to run tlGENIE3
-
-### Run tlGENIE3 on time series data with the default parameters
-
-The following command runs tlGENIE3 on the time series data `TS.data` with the default parameters:
-
-```{r}
-weight.matrix <- tlGENIE3(TS.data)
-```
-```{r}
-dim(weight.matrix)
-(weight.matrix)
-```
-
-Like `GENIE3()`, `tlGENIE3()` outputs a matrix containing the weights of the putative regulatory links, with higher weights corresponding to more likely regulatory links. `weight.matrix[i,j]` is the weight of the link directed from the $i$-th gene to $j$-th gene.
-
-
-### Run tlGENIE3 on time series and steady-state data with the default parameters
-
-The following command runs tlGENIE3 on the time series data `TS.data` and the steady-state data `expr.matrix` with the default parameters:
-
-```{r}
-weight.matrix <- tlGENIE3(TS.data,SS.data=expr.matrix)
-```
-
-### Change the value of the time lag
-
-`tlGENIE3()` learns models predicting the expression of each target gene at the $k$-th time point from the expression levels of the other genes at the $(k − h)$-th time point. By default, $h = 1$. The value of the time lag $h$ can however be changed. For example, to set $h = 2$:
-
-```{r}
-weight.matrix <- tlGENIE3(TS.data,h=2)
-```
-
-### Other parameters
-
-The remaining parameters of the function `tlGENIE3()` are the same as for the function `GENIE3()`.
-
-### Obtain more information
-
-```{r}
-?tlGENIE3
-```
-
-
 ## Get the list of the regulatory links
 
 ### Get all the regulatory links
@@ -216,7 +146,7 @@ link.list <- get.link.list(weight.matrix, threshold=0.1)
 ```
 
 ### *Important note* on the interpretation of the weights
-The weights of the links returned by `GENIE3()` and `tlGENIE3()` **do not have any statistical meaning** and only provide a way to rank the regulatory links. There is therefore no standard threshold value, and caution must be taken when choosing one.
+The weights of the links returned by `GENIE3()` **do not have any statistical meaning** and only provide a way to rank the regulatory links. There is therefore no standard threshold value, and caution must be taken when choosing one.
 
 ### Obtain more information
 

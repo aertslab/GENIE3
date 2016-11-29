@@ -5,18 +5,6 @@ colnames(expr.matrix) <- paste("Sample", 1:5, sep="")
 head(expr.matrix)
 
 ## ------------------------------------------------------------------------
-data1 <- matrix(sample(1:10, 20, replace=TRUE), nrow=5)
-rownames(data1) <- paste("Gene", 1:5, sep="")
-colnames(data1) <- paste("Time point", 1:4, sep="")
-
-data2 <- matrix(sample(1:10, 25, replace=TRUE), nrow=5)
-rownames(data2) <- paste("Gene", 1:5, sep="")
-colnames(data2) <- paste("Time point", 1:5, sep="")
-
-TS.data <- list(data1,data2) 
-(TS.data)
-
-## ------------------------------------------------------------------------
 library(GENIE3)
 weight.matrix <- GENIE3(expr.matrix)
 
@@ -49,22 +37,6 @@ weight.matrix <- GENIE3(expr.matrix, regulators=regulators)
 
 ## ------------------------------------------------------------------------
 ?GENIE3
-
-## ------------------------------------------------------------------------
-weight.matrix <- tlGENIE3(TS.data)
-
-## ------------------------------------------------------------------------
-dim(weight.matrix)
-(weight.matrix)
-
-## ------------------------------------------------------------------------
-weight.matrix <- tlGENIE3(TS.data,SS.data=expr.matrix)
-
-## ------------------------------------------------------------------------
-weight.matrix <- tlGENIE3(TS.data,h=2)
-
-## ------------------------------------------------------------------------
-?tlGENIE3
 
 ## ------------------------------------------------------------------------
 link.list <- get.link.list(weight.matrix)

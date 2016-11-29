@@ -12,12 +12,3 @@ citEntry(entry="Article",
   year ="2010", 
   doi = "10.1371/journal.pone.0012776",
   textVersion = "Inferring regulatory networks from expression data using tree-based methods. Van Anh HUYNH-THU, Alexandre IRRTHUM, Louis WEHENKEL, Pierre GEURTS. PLoS ONE 5(9): e12776, 2010.")
-
-citEntry(entry="Article",
-  author = personList(
-    person(given="Van Anh", family="HUYNH-THU"),
-    person(given="Pierre", family="GEURTS")),
-  title ="tlGENIE3: time-lagged GENIE3 for the inference of gene networks from time series and steady-state expression data",
-  journal ="Bioinformatics",
-  year ="2016", 
-  textVersion = "tlGENIE3: time-lagged GENIE3 for the inference of gene networks from time series expression data. Van Anh HUYNH-THU, Pierre GEURTS. Bioinformatics, submitted, 2016.")

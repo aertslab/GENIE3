@@ -10,7 +10,7 @@
 
 <meta name="author" content="Van Anh Huynh-Thu (vahuynh@ulg.ac.be)" />
 
-<meta name="date" content="2016-11-04" />
+<meta name="date" content="2016-11-29" />
 
 <title>GENIE3 vignette</title>
 
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function() {
 <div id="header">
 <h1 class="title">GENIE3 vignette</h1>
 <h4 class="author"><em>Van Anh Huynh-Thu (<a href="mailto:vahuynh@ulg.ac.be">vahuynh@ulg.ac.be</a>)</em></h4>
-<h4 class="date"><em>2016-11-04</em></h4>
+<h4 class="date"><em>2016-11-29</em></h4>
 </div>
 <h4 class="package">Package version: <span style="font-weight: normal">GENIE3 0.99.0</span></h4>
 
@@ -60,7 +60,6 @@ document.addEventListener("DOMContentLoaded", function() {
 <ul>
 <li><a href="#format-of-expression-data">Format of expression data</a><ul>
 <li><a href="#format-of-steady-state-expression-data">Format of steady-state expression data</a></li>
-<li><a href="#format-of-time-series-data">Format of time series data</a></li>
 </ul></li>
 <li><a href="#how-to-run-genie3">How to run GENIE3</a><ul>
 <li><a href="#run-genie3-with-the-default-parameters">Run GENIE3 with the default parameters</a></li>
@@ -69,31 +68,20 @@ document.addEventListener("DOMContentLoaded", function() {
 <li><a href="#parallel-genie3">Parallel GENIE3</a></li>
 <li><a href="#obtain-more-information">Obtain more information</a></li>
 </ul></li>
-<li><a href="#how-to-run-tlgenie3">How to run tlGENIE3</a><ul>
-<li><a href="#run-tlgenie3-on-time-series-data-with-the-default-parameters">Run tlGENIE3 on time series data with the default parameters</a></li>
-<li><a href="#run-tlgenie3-on-time-series-and-steady-state-data-with-the-default-parameters">Run tlGENIE3 on time series and steady-state data with the default parameters</a></li>
-<li><a href="#change-the-value-of-the-time-lag">Change the value of the time lag</a></li>
-<li><a href="#other-parameters">Other parameters</a></li>
-<li><a href="#obtain-more-information-1">Obtain more information</a></li>
-</ul></li>
 <li><a href="#get-the-list-of-the-regulatory-links">Get the list of the regulatory links</a><ul>
 <li><a href="#get-all-the-regulatory-links">Get all the regulatory links</a></li>
 <li><a href="#get-only-the-top-ranked-links">Get only the top-ranked links</a></li>
 <li><a href="#get-only-the-links-with-a-weight-higher-than-some-threshold">Get only the links with a weight higher than some threshold</a></li>
 <li><a href="#important-note-on-the-interpretation-of-the-weights"><em>Important note</em> on the interpretation of the weights</a></li>
-<li><a href="#obtain-more-information-2">Obtain more information</a></li>
+<li><a href="#obtain-more-information-1">Obtain more information</a></li>
 </ul></li>
 </ul>
 </div>
 
-<p>This is the documentation for the R implementation of GENIE3 and tlGENIE3.</p>
+<p>This is the documentation for the R implementation of GENIE3.</p>
 <p>The GENIE3 method is described in:</p>
 <blockquote>
 <p>Huynh-Thu V. A., Irrthum A., Wehenkel L., and Geurts P. (2010) Inferring regulatory networks from expression data using tree-based methods. <em>PLoS ONE</em>, 5(9):e12776.</p>
-</blockquote>
-<p>The tlGENIE3 method is described in:</p>
-<blockquote>
-<p>Huynh-Thu V. A. and Geurts P. (2016) tlGENIE3: time-lagged GENIE3 for the inference of gene networks from time series expression data. <em>Bioinformatics</em>, submitted.</p>
 </blockquote>
 <div id="format-of-expression-data" class="section level2">
 <h2>Format of expression data</h2>
@@ -105,44 +93,13 @@ rownames(expr.matrix) &lt;- paste(&quot;Gene&quot;, 1:20, sep=&quot;&quot;)
 colnames(expr.matrix) &lt;- paste(&quot;Sample&quot;, 1:5, sep=&quot;&quot;)
 head(expr.matrix)</code></pre>
 <pre><code>##       Sample1 Sample2 Sample3 Sample4 Sample5
-## Gene1       6       4       8       7       8
-## Gene2       5       1       7       3       9
-## Gene3       2      10       1       8       1
-## Gene4       3       9       4       6       4
-## Gene5       5       9       5       4       1
-## Gene6       4       1       5       7       1</code></pre>
+## Gene1       9       2      10       8       6
+## Gene2       5       9       3       7       4
+## Gene3       5       4       7      10       4
+## Gene4       4       3      10       8       5
+## Gene5       7       5       8      10       7
+## Gene6       2       2       2       1       3</code></pre>
 <p>This matrix contains the expression data of 20 genes from 5 samples. Note that the expression data do not need to be normalised in any way.</p>
-<p>The same matrix format must be used for the input argument <code>SS.data</code> of the <code>tlGENIE3()</code> function.</p>
-</div>
-<div id="format-of-time-series-data" class="section level3">
-<h3>Format of time series data</h3>
-<p>The <code>tlGENIE3()</code> function takes as input argument a list of gene expression matrices <code>TS.data</code>. Each matrix of <code>TS.data</code> must correspond to a time series experiment and must have the same format as a steady-state expression matrix (i.e. a genes x samples matrix where the names of the genes/rows must be specified). The number of time points does not need to be the same in all the experiments, but the genes must be the same. For example, the following command lines generate a fake list of time series data:</p>
-<pre class="r"><code>data1 &lt;- matrix(sample(1:10, 20, replace=TRUE), nrow=5)
-rownames(data1) &lt;- paste(&quot;Gene&quot;, 1:5, sep=&quot;&quot;)
-colnames(data1) &lt;- paste(&quot;Time point&quot;, 1:4, sep=&quot;&quot;)
-
-data2 &lt;- matrix(sample(1:10, 25, replace=TRUE), nrow=5)
-rownames(data2) &lt;- paste(&quot;Gene&quot;, 1:5, sep=&quot;&quot;)
-colnames(data2) &lt;- paste(&quot;Time point&quot;, 1:5, sep=&quot;&quot;)
-
-TS.data &lt;- list(data1,data2) 
-(TS.data)</code></pre>
-<pre><code>## [[1]]
-##       Time point1 Time point2 Time point3 Time point4
-## Gene1           8           7           2           8
-## Gene2          10           9           8           5
-## Gene3          10           3           5           6
-## Gene4           6           3           5           8
-## Gene5           5           5           9           1
-## 
-## [[2]]
-##       Time point1 Time point2 Time point3 Time point4 Time point5
-## Gene1          10           2           1           8           8
-## Gene2           4           8          10           3          10
-## Gene3           2           2           5           4          10
-## Gene4           1          10           5           8           5
-## Gene5           3           5           6           2           8</code></pre>
-<p>Here, <code>TS.data</code> contains the expression data of 5 genes in 2 time series experiments (4 and 5 time points respectively).</p>
 </div>
 </div>
 <div id="how-to-run-genie3" class="section level2">
@@ -156,11 +113,11 @@ weight.matrix &lt;- GENIE3(expr.matrix)</code></pre>
 <pre><code>## [1] 20 20</code></pre>
 <pre class="r"><code>weight.matrix[1:5,1:5]</code></pre>
 <pre><code>##            Gene1      Gene2      Gene3      Gene4      Gene5
-## Gene1 0.00000000 0.10931174 0.05757937 0.07583969 0.07058896
-## Gene2 0.10334865 0.00000000 0.18303460 0.12593836 0.10954095
-## Gene3 0.12216415 0.15431436 0.00000000 0.12186074 0.04733632
-## Gene4 0.06928055 0.08061362 0.15157778 0.00000000 0.07892909
-## Gene5 0.08359981 0.05648737 0.03425152 0.07230472 0.00000000</code></pre>
+## Gene1 0.00000000 0.08661471 0.03168880 0.03915270 0.05257228
+## Gene2 0.06219137 0.00000000 0.01473454 0.04288951 0.01968087
+## Gene3 0.06770103 0.02338619 0.00000000 0.10049314 0.06650458
+## Gene4 0.07504170 0.07351457 0.09895342 0.00000000 0.07852787
+## Gene5 0.07085463 0.08860302 0.10825415 0.09313608 0.00000000</code></pre>
 <p>The algorithm outputs a matrix containing the weights of the putative regulatory links, with higher weights corresponding to more likely regulatory links. <code>weight.matrix[i,j]</code> is the weight of the link directed from the <span class="math inline">\(i\)</span>-th gene to <span class="math inline">\(j\)</span>-th gene.</p>
 </div>
 <div id="restrict-the-candidate-regulators-to-a-subset-of-genes" class="section level3">
@@ -206,42 +163,6 @@ weight.matrix = GENIE3(expr.matrix, tree.method=tree.method, K=K, ntrees=ntrees)
 <pre class="r"><code>?GENIE3</code></pre>
 </div>
 </div>
-<div id="how-to-run-tlgenie3" class="section level2">
-<h2>How to run tlGENIE3</h2>
-<div id="run-tlgenie3-on-time-series-data-with-the-default-parameters" class="section level3">
-<h3>Run tlGENIE3 on time series data with the default parameters</h3>
-<p>The following command runs tlGENIE3 on the time series data <code>TS.data</code> with the default parameters:</p>
-<pre class="r"><code>weight.matrix &lt;- tlGENIE3(TS.data)</code></pre>
-<pre class="r"><code>dim(weight.matrix)</code></pre>
-<pre><code>## [1] 5 5</code></pre>
-<pre class="r"><code>(weight.matrix)</code></pre>
-<pre><code>##            Gene1     Gene2     Gene3     Gene4     Gene5
-## Gene1 0.00000000 0.2348899 0.1155325 0.3286665 0.3408048
-## Gene2 0.06062269 0.0000000 0.3407699 0.1514759 0.1258686
-## Gene3 0.64903500 0.1295362 0.0000000 0.2573290 0.3711189
-## Gene4 0.18694169 0.2145122 0.2115587 0.0000000 0.1622078
-## Gene5 0.10340062 0.4210617 0.3321390 0.2625286 0.0000000</code></pre>
-<p>Like <code>GENIE3()</code>, <code>tlGENIE3()</code> outputs a matrix containing the weights of the putative regulatory links, with higher weights corresponding to more likely regulatory links. <code>weight.matrix[i,j]</code> is the weight of the link directed from the <span class="math inline">\(i\)</span>-th gene to <span class="math inline">\(j\)</span>-th gene.</p>
-</div>
-<div id="run-tlgenie3-on-time-series-and-steady-state-data-with-the-default-parameters" class="section level3">
-<h3>Run tlGENIE3 on time series and steady-state data with the default parameters</h3>
-<p>The following command runs tlGENIE3 on the time series data <code>TS.data</code> and the steady-state data <code>expr.matrix</code> with the default parameters:</p>
-<pre class="r"><code>weight.matrix &lt;- tlGENIE3(TS.data,SS.data=expr.matrix)</code></pre>
-</div>
-<div id="change-the-value-of-the-time-lag" class="section level3">
-<h3>Change the value of the time lag</h3>
-<p><code>tlGENIE3()</code> learns models predicting the expression of each target gene at the <span class="math inline">\(k\)</span>-th time point from the expression levels of the other genes at the <span class="math inline">\((k − h)\)</span>-th time point. By default, <span class="math inline">\(h = 1\)</span>. The value of the time lag <span class="math inline">\(h\)</span> can however be changed. For example, to set <span class="math inline">\(h = 2\)</span>:</p>
-<pre class="r"><code>weight.matrix &lt;- tlGENIE3(TS.data,h=2)</code></pre>
-</div>
-<div id="other-parameters" class="section level3">
-<h3>Other parameters</h3>
-<p>The remaining parameters of the function <code>tlGENIE3()</code> are the same as for the function <code>GENIE3()</code>.</p>
-</div>
-<div id="obtain-more-information-1" class="section level3">
-<h3>Obtain more information</h3>
-<pre class="r"><code>?tlGENIE3</code></pre>
-</div>
-</div>
 <div id="get-the-list-of-the-regulatory-links" class="section level2">
 <h2>Get the list of the regulatory links</h2>
 <div id="get-all-the-regulatory-links" class="section level3">
@@ -249,15 +170,15 @@ weight.matrix = GENIE3(expr.matrix, tree.method=tree.method, K=K, ntrees=ntrees)
 <p>You can obtain the list of all the regulatory links (from most likely to least likely) with this command:</p>
 <pre class="r"><code>link.list &lt;- get.link.list(weight.matrix)
 dim(link.list)</code></pre>
-<pre><code>## [1] 20  3</code></pre>
+<pre><code>## [1] 380   3</code></pre>
 <pre class="r"><code>head(link.list)</code></pre>
 <pre><code>##   regulatory.gene target.gene    weight
-## 1           Gene5       Gene3 0.4108814
-## 2           Gene4       Gene2 0.3856773
-## 3           Gene3       Gene5 0.3733661
-## 4           Gene2       Gene4 0.3428983
-## 5           Gene1       Gene3 0.3413459
-## 6           Gene2       Gene5 0.3163284</code></pre>
+## 1           Gene4       Gene2 0.6264368
+## 2           Gene4       Gene7 0.6230120
+## 3           Gene7      Gene11 0.6209527
+## 4           Gene7       Gene4 0.6126178
+## 5           Gene7      Gene20 0.5968401
+## 6           Gene7      Gene13 0.5908285</code></pre>
 <p>The resulting <code>link.list</code> matrix contains the ranking of links. Each row corresponds to a regulatory link. The first column shows the regulator, the second column shows the target gene, and the last column indicates the weight of the link.</p>
 <p>(Note that the ranking that is obtained will be slightly different from one run to another. This is due to the intrinsic randomness of the Random Forest and Extra-Trees methods. The variance of the ranking can be decreased by increasing the number of trees per ensemble.)</p>
 </div>
@@ -273,9 +194,9 @@ dim(link.list)</code></pre>
 </div>
 <div id="important-note-on-the-interpretation-of-the-weights" class="section level3">
 <h3><em>Important note</em> on the interpretation of the weights</h3>
-<p>The weights of the links returned by <code>GENIE3()</code> and <code>tlGENIE3()</code> <strong>do not have any statistical meaning</strong> and only provide a way to rank the regulatory links. There is therefore no standard threshold value, and caution must be taken when choosing one.</p>
+<p>The weights of the links returned by <code>GENIE3()</code> <strong>do not have any statistical meaning</strong> and only provide a way to rank the regulatory links. There is therefore no standard threshold value, and caution must be taken when choosing one.</p>
 </div>
-<div id="obtain-more-information-2" class="section level3">
+<div id="obtain-more-information-1" class="section level3">
 <h3>Obtain more information</h3>
 <pre><code>?get.link.list</code></pre>
 </div>

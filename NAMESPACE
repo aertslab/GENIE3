@@ -1,6 +1,5 @@
 useDynLib(GENIE3)
 export(GENIE3)
-export(tlGENIE3)
 export(get.link.list)
 importFrom("stats", "sd", "setNames")
 importFrom("utils", "flush.console")
