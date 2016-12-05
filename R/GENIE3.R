@@ -15,19 +15,20 @@
 #' 
 #' @examples
 #' ## Generate fake expression matrix
-#' expr.matrix <- matrix(sample(1:10, 100, replace=TRUE), nrow=20)
-#' rownames(expr.matrix) <- paste("Gene", 1:20, sep="")
-#' colnames(expr.matrix) <- paste("Sample", 1:5, sep="")
+#' exprMatrix <- matrix(sample(1:10, 100, replace=TRUE), nrow=20)
+#' rownames(exprMatrix) <- paste("Gene", 1:20, sep="")
+#' colnames(exprMatrix) <- paste("Sample", 1:5, sep="")
 #'
 #' ## Run GENIE3
-#' weight.matrix <- GENIE3(expr.matrix, regulators=paste("Gene", 1:5, sep=""))
+#' weightMatrix <- GENIE3(exprMatrix, regulators=paste("Gene", 1:5, sep=""))
 #' 
 #' ## Get ranking of edges 
-#' link.list <- get.link.list(weight.matrix)
-#' head(link.list)
+#' linkList <- get.link.list(weightMatrix)
+#' head(linkList)
 #' @export
-GENIE3 <- function(expr.matrix, tree.method="RF", K="sqrt", ntrees=1000, regulators=NULL, ncores=1, verbose=FALSE, seed=NULL) {
-
+GENIE3 <- function(expr.matrix, tree.method="RF", K="sqrt", ntrees=1000, regulators=NULL, ncores=1, verbose=FALSE, seed=NULL) 
+{
+    ############################################################
 	# check input arguments
 	if (!is.matrix(expr.matrix) && !is.array(expr.matrix)) {
 		stop("Parameter expr.matrix must be a two-dimensional matrix where each row corresponds to a gene and each column corresponds to a condition/sample.")
@@ -69,11 +70,17 @@ GENIE3 <- function(expr.matrix, tree.method="RF", K="sqrt", ntrees=1000, regulat
 		if (is.numeric(regulators) && max(regulators) > dim(expr.matrix)[1]) {
 			stop("At least one index in regulators exceeds the number of genes.")
 		}
+	    
+	    if(is.numeric(regulators))
+	    {
+	        regulators <- rownames(expr.matrix)[regulators]
+	    }
 	}
 	
 	if (!is.numeric(ncores) || ncores<1) {
 		stop("Parameter ncores should be a stricly positive integer.")
 	}
+    ############################################################
 	
 	
 	# set random number generator seed if seed is given
@@ -87,9 +94,10 @@ GENIE3 <- function(expr.matrix, tree.method="RF", K="sqrt", ntrees=1000, regulat
     # setup weight matrix
     num.samples <- dim(expr.matrix)[1]
     num.genes <- dim(expr.matrix)[2]
+    num.regulators <- length(regulators)
     gene.names <- colnames(expr.matrix)
-    weight.matrix <- matrix(0.0, nrow=num.genes, ncol=num.genes)
-    rownames(weight.matrix) <- gene.names
+    weight.matrix <- matrix(0.0, nrow=num.regulators, ncol=num.genes)
+    rownames(weight.matrix) <- regulators
     colnames(weight.matrix) <- gene.names
 	
     # get names of input genes
@@ -133,7 +141,6 @@ GENIE3 <- function(expr.matrix, tree.method="RF", K="sqrt", ntrees=1000, regulat
 	}
     
     # compute importances for every target gene
-   
 	if (ncores==1) {
 		# serial computing
 		if (verbose) {
