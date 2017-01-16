@@ -28,7 +28,7 @@ colnames(expr.matrix) <- paste("Sample", 1:5, sep="")
 ## Run GENIE3
 weight.matrix <- GENIE3(expr.matrix, regulators=paste("Gene", 1:5, sep=""))
 
-## Get ranking of edges 
+## Get ranking of edges
 link.list <- get.link.list(weight.matrix)
 head(link.list)
 }

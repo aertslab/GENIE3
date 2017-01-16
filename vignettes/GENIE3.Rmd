@@ -83,16 +83,16 @@ An example is shown below:
 
 ```{r eval=FALSE}
 # Use Extra-Trees method
-tree.method = "ET"
+tree.method <- "ET"
 
 # Number of randomly chosen candidate regulators at each node of a tree
-K = 7
+K <- 7
 
 # Number of trees per ensemble
-ntrees = 50
+ntrees <- 50
 
 # Run the method with these settings
-weight.matrix = GENIE3(expr.matrix, tree.method=tree.method, K=K, ntrees=ntrees)
+weight.matrix <- GENIE3(expr.matrix, tree.method=tree.method, K=K, ntrees=ntrees)
 ```
 
 
@@ -101,7 +101,7 @@ weight.matrix = GENIE3(expr.matrix, tree.method=tree.method, K=K, ntrees=ntrees)
 To decrease the computing times, GENIE3 can be run on multiple cores. The parameter `ncores` specifies the number of cores you want to use. For example:
 
 ```{r eval=FALSE}
-weight.matrix <- GENIE3(expr.matrix, ncores=4)
+weight.matrix <- GENIE3(expr.matrix, ncores=4, verbose=TRUE)
 ```
 
 ### Obtain more information
