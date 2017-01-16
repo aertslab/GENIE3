@@ -32,15 +32,15 @@ Weighted adjacency matrix of inferred network. Element w_ij (row i, column j) gi
 }
 \examples{
 ## Generate fake expression matrix
-expr.matrix <- matrix(sample(1:10, 100, replace=TRUE), nrow=20)
-rownames(expr.matrix) <- paste("Gene", 1:20, sep="")
-colnames(expr.matrix) <- paste("Sample", 1:5, sep="")
+exprMatrix <- matrix(sample(1:10, 100, replace=TRUE), nrow=20)
+rownames(exprMatrix) <- paste("Gene", 1:20, sep="")
+colnames(exprMatrix) <- paste("Sample", 1:5, sep="")
 
 ## Run GENIE3
-weight.matrix <- GENIE3(expr.matrix, regulators=paste("Gene", 1:5, sep=""))
+weightMatrix <- GENIE3(exprMatrix, regulators=paste("Gene", 1:5, sep=""))
 
-## Get ranking of edges 
-link.list <- get.link.list(weight.matrix)
-head(link.list)
+## Get ranking of edges
+linkList <- get.link.list(weightMatrix)
+head(linkList)
 }
 
