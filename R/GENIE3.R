@@ -7,7 +7,6 @@
 #' \itemize{
 #' \item \link[Biobase]{ExpressionSet}: The matrix will be obtained through assay(exprMatrix), wich will extract the first assay (usually the counts).
 #' \item \link[SummarizedExperiment]{RangedSummarizedExperiment}: The matrix will be obtained through exprs(exprMatrix)
-#' \item \link[scater]{SCESet}: The matrix will be obtained through getExprs(exprMatrix), which will use the function stored in object@useForExprs.
 #' }
 #' @param treeMethod Tree-based method used. Must be either "RF" for Random Forests (default) or "ET" for Extra-Trees.
 #' @param K Number of candidate regulators randomly selected at each tree node (for the determination of the best split). Must be either "sqrt" for the square root of the total number of candidate regulators (default), "all" for the total number of candidate regulators, or a stricly positive integer.
@@ -58,22 +57,22 @@ GENIE3 <- function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulator
         warning(msg)
     }
     
-    
+    # \item \link[scater]{SCESet}: The matrix will be obtained through getExprs(exprMatrix), which will use the function stored in object@useForExprs.
     # scater::SCEset
     # SCESet extends the basic Bioconductor ExpressionSet class.
-    if("SCESet" %in% class(exprMatrix))   
-    {
-        usedSlot <- exprMatrix@useForExprs
-        exprMatrix <- scater::getExprs(exprMatrix) # Note if such object@useForExprs is not defined, this method returns NULL.
-        
-        if(is.null(exprMatrix)) 
-        {
-            stop("")
-        }else
-        {
-            warning(paste0("SCESet function used to extract the expression matrix: \t", usedSlot))
-        }
-    }
+    # if("SCESet" %in% class(exprMatrix))   
+    # {
+    #     usedSlot <- exprMatrix@useForExprs
+    #     exprMatrix <- scater::get_exprs(sce, "exprs") # Counts or Exprs??
+    #     
+    #     if(is.null(exprMatrix)) 
+    #     {
+    #         stop("")
+    #     }else
+    #     {
+    #         warning(paste0("SCESet function used to extract the expression matrix: \t", usedSlot))
+    #     }
+    # }
     
     ############################################################
 	# check input arguments
