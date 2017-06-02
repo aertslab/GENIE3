@@ -14,7 +14,6 @@ The expression matrix can also be provided as one of the Bioconductor classes:
 \itemize{
 \item \link[Biobase]{ExpressionSet}: The matrix will be obtained through assay(exprMatrix), wich will extract the first assay (usually the counts).
 \item \link[SummarizedExperiment]{RangedSummarizedExperiment}: The matrix will be obtained through exprs(exprMatrix)
-\item \link[scater]{SCESet}: The matrix will be obtained through getExprs(exprMatrix), which will use the function stored in object@useForExprs.
 }}
 
 \item{treeMethod}{Tree-based method used. Must be either "RF" for Random Forests (default) or "ET" for Extra-Trees.}

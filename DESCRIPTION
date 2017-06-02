@@ -1,7 +1,7 @@
 Package: GENIE3
 Type: Package
 Title: GEne Network Inference with Ensemble of trees
-Version: 0.99.2
+Version: 0.99.3
 Date: 2017-06-02
 Author: Van Anh Huynh-Thu, Sara Aibar, Pierre Geurts
 Maintainer: Van Anh Huynh-Thu <vahuynh@ulg.ac.be>
@@ -10,7 +10,7 @@ Description: This package implements the GENIE3 algorithm for inferring gene
 License: GPL (>= 2)
 LazyData: TRUE
 Imports: stats, reshape2, testthat
-Suggests: knitr, rmarkdown, foreach, doRNG, doParallel, Biobase, SummarizedExperiment, scater
+Suggests: knitr, rmarkdown, foreach, doRNG, doParallel, Biobase, SummarizedExperiment
 NeedsCompilation: yes
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr
