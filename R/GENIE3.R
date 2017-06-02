@@ -2,12 +2,19 @@
 #'
 #' @description \code{GENIE3} Infers a gene regulatory network (in the form of a weighted adjacency matrix) from expression data, using ensembles of regression trees.
 #'
-#' @param expr.matrix Expression matrix (genes x samples). Every row is a gene, every column is a sample.
-#' @param tree.method Tree-based method used. Must be either "RF" for Random Forests (default) or "ET" for Extra-Trees.
+#' @param exprMatrix Expression matrix (genes x samples). Every row is a gene, every column is a sample.
+#' The expression matrix can also be provided as one of the Bioconductor classes:
+#' \itemize{
+#' \item \link[Biobase]{ExpressionSet}: The matrix will be obtained through assay(exprMatrix), wich will extract the first assay (usually the counts).
+#' \item \link[SummarizedExperiment]{RangedSummarizedExperiment}: The matrix will be obtained through exprs(exprMatrix)
+#' \item \link[scater]{SCESet}: The matrix will be obtained through getExprs(exprMatrix), which will use the function stored in object@useForExprs.
+#' }
+#' @param treeMethod Tree-based method used. Must be either "RF" for Random Forests (default) or "ET" for Extra-Trees.
 #' @param K Number of candidate regulators randomly selected at each tree node (for the determination of the best split). Must be either "sqrt" for the square root of the total number of candidate regulators (default), "all" for the total number of candidate regulators, or a stricly positive integer.
-#' @param ntrees Number of trees in an ensemble for each target gene. Default: 1000.
+#' @param nTrees Number of trees in an ensemble for each target gene. Default: 1000.
 #' @param regulators Subset of genes used as candidate regulators. Must be either a vector of indices, e.g. \code{c(1,5,6,7)}, or a vector of gene names, e.g. \code{c("at_12377", "at_10912")}. The default value NULL means that all the genes are used as candidate regulators.
-#' @param ncores Number of cores to use for parallel computing. Default: 1.
+#' @param targets Subset of genes to which potential regulators will be calculated. Must be either a vector of indices, e.g. \code{c(1,5,6,7)}, or a vector of gene names, e.g. \code{c("at_12377", "at_10912")}. If NULL (default), regulators will be calculated for all genes in the input matrix.
+#' @param nCores Number of cores to use for parallel computing. Default: 1.
 #' @param verbose If set to TRUE, a feedback on the progress of the calculations is given. Default: FALSE.
 #' @param seed Random number generator seed for replication of analyses. The default value NULL means that the seed is not reset.
 #'
@@ -23,27 +30,67 @@
 #' weightMatrix <- GENIE3(exprMatrix, regulators=paste("Gene", 1:5, sep=""))
 #'
 #' ## Get ranking of edges
-#' linkList <- get.link.list(weightMatrix)
+#' linkList <- getLinkList(weightMatrix)
 #' head(linkList)
 #' @export
-GENIE3 <- function(expr.matrix, tree.method="RF", K="sqrt", ntrees=1000, regulators=NULL, ncores=1, verbose=FALSE, seed=NULL)
+GENIE3 <- function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, targets=NULL, nCores=1, verbose=FALSE, seed=NULL)
 {
-  ############################################################
+    ############################################################
+    # Extract expression matrix (if provided as a class)
+    
+    # Biobase::ExpressionSet
+    if("ExpressionSet" %in% class(exprMatrix)) 
+    {
+        exprMatrix <- Biobase::exprs(exprMatrix)
+    }
+    
+    # SummarizedExperiment::RangedSummarizedExperiment
+    # Use SummarizedExperiment rather than the older ExpressionSet, especially for sequence data.
+    if(grepl("SummarizedExperiment", class(exprMatrix))) 
+    {
+        usedSlot <- names(SummarizedExperiment::assays(exprMatrix))
+        otherAvailable <- names(SummarizedExperiment::assays(exprMatrix))[-1]
+        
+        exprMatrix <- SummarizedExperiment::assay(exprMatrix)
+        
+        msg <- paste0("SummarizedExperiment slot extracted as expression matrix: \t", usedSlot) 
+        if(length(otherAvailable)>0) msg <- paste(msg, "\nOther slots available:", paste(otherAvailable, collapse=", "))
+        warning(msg)
+    }
+    
+    
+    # scater::SCEset
+    # SCESet extends the basic Bioconductor ExpressionSet class.
+    if("SCESet" %in% class(exprMatrix))   
+    {
+        usedSlot <- exprMatrix@useForExprs
+        exprMatrix <- scater::getExprs(exprMatrix) # Note if such object@useForExprs is not defined, this method returns NULL.
+        
+        if(is.null(exprMatrix)) 
+        {
+            stop("")
+        }else
+        {
+            warning(paste0("SCESet function used to extract the expression matrix: \t", usedSlot))
+        }
+    }
+    
+    ############################################################
 	# check input arguments
-	if (!is.matrix(expr.matrix) && !is.array(expr.matrix)) {
-		stop("Parameter expr.matrix must be a two-dimensional matrix where each row corresponds to a gene and each column corresponds to a condition/sample.")
+	if (!is.matrix(exprMatrix) && !is.array(exprMatrix)) {
+		stop("Parameter exprMatrix must be a two-dimensional matrix where each row corresponds to a gene and each column corresponds to a condition/sample.")
 	}
 
-	if (length(dim(expr.matrix)) != 2) {
-		stop("Parameter expr.matrix must be a two-dimensional matrix where each row corresponds to a gene and each column corresponds to a condition/sample.")
+	if (length(dim(exprMatrix)) != 2) {
+		stop("Parameter exprMatrix must be a two-dimensional matrix where each row corresponds to a gene and each column corresponds to a condition/sample.")
 	}
 
-	if (is.null(rownames(expr.matrix))) {
-		stop("expr.matrix must specify the names of the genes in rownames(expr.matrix).")
+	if (is.null(rownames(exprMatrix))) {
+		stop("exprMatrix must specify the names of the genes in rownames(exprMatrix).")
 	}
 
-	if (tree.method != "RF" && tree.method != "ET") {
-		stop("Parameter tree.method must be \"RF\" (Random Forests) or \"ET\" (Extra-Trees).")
+	if (treeMethod != "RF" && treeMethod != "ET") {
+		stop("Parameter treeMethod must be \"RF\" (Random Forests) or \"ET\" (Extra-Trees).")
 	}
 
 	if (K != "sqrt" && K != "all" && !is.numeric(K)) {
@@ -54,159 +101,191 @@ GENIE3 <- function(expr.matrix, tree.method="RF", K="sqrt", ntrees=1000, regulat
 		stop("Parameter K must be \"sqrt\", or \"all\", or a strictly positive integer.")
 	}
 
-	if (!is.numeric(ntrees) || ntrees<1) {
-		stop("Parameter ntrees should be a stricly positive integer.")
+	if (!is.numeric(nTrees) || nTrees<1) {
+		stop("Parameter nTrees should be a stricly positive integer.")
 	}
 
-	if (!is.null(regulators)) {
-	  if(length(regulators)<2) stop("Provide at least 2 potential regulators.")
+	if (!is.null(regulators)) 
+	{
+	    if(length(regulators)<2) stop("Provide at least 2 potential regulators.")
 
 		if (!is.vector(regulators)) {
 			stop("Parameter regulators must be either a vector of indices or a vector of gene names.")
 		}
 
-		if (is.character(regulators) && length(intersect(regulators,rownames(expr.matrix))) == 0) {
+		if (is.character(regulators) && length(intersect(regulators,rownames(exprMatrix))) == 0) {
 			stop("The genes must contain at least one candidate regulator.")
 		}
 
-		if (is.numeric(regulators) && max(regulators) > nrow(expr.matrix)) {
+		if (is.numeric(regulators) && max(regulators) > nrow(exprMatrix)) {
 			stop("At least one index in regulators exceeds the number of genes.")
 		}
 
-    if(is.numeric(regulators))
+        if(is.numeric(regulators))
+        {
+            regulators <- rownames(exprMatrix)[regulators]
+        }
+	}
+
+	if (!is.numeric(nCores) || nCores<1) 
+	{
+		stop("Parameter nCores should be a stricly positive integer.")
+	}
+    ############################################################
+    
+    
+    # transpose expression matrix to (samples x genes)
+    exprMatrix <- t(exprMatrix)
+    num.samples <- nrow(exprMatrix)
+    allGeneNames <- colnames(exprMatrix)
+    
+    # get names of input genes
+    if(is.null(regulators)) 
     {
-        regulators <- rownames(expr.matrix)[regulators]
+        regulatorNames <- allGeneNames
+    } else 
+    {
+        # input gene indices given as integers
+        if (is.numeric(regulators))
+        {
+            regulatorNames <- allGeneNames[regulators]
+            # input gene indices given as names
+        } else 
+        {
+            regulatorNames <- regulators
+            # for security, abort if some input gene name is not in gene names
+            missingGeneNames <- setdiff(regulatorNames, allGeneNames)
+            if (length(missingGeneNames) != 0) stop(paste("Regulator genes missing from the expression matrix:", paste(missingGeneNames, collapse=", ")))
+        }
     }
-	}
-
-	if (!is.numeric(ncores) || ncores<1) {
-		stop("Parameter ncores should be a stricly positive integer.")
-	}
-  ############################################################
-
-
-  # transpose expression matrix to (samples x genes)
-  expr.matrix <- t(expr.matrix)
-  num.samples <- nrow(expr.matrix)
-  num.genes <- ncol(expr.matrix)
-  gene.names <- colnames(expr.matrix)
-
-  # get names of input genes
-  if(is.null(regulators)) {
-    input.gene.names <- gene.names
-  } else {
-    # input gene indices given as integers
-    if (is.numeric(regulators)) {
-      input.gene.names <- gene.names[regulators]
-      # input gene indices given as names
+    rm(regulators)
+    
+    # get names of target genes
+    if(is.null(targets)) 
+    {
+        targetNames <- allGeneNames
+    } else 
+    {
+        # input gene indices given as integers
+        if (is.numeric(targets))
+        {
+            targetNames <- allGeneNames[targets]
+            # input gene indices given as names
+        } else 
+        {
+            targetNames <- targets
+            # for security, abort if some input gene name is not in gene names
+            missingGeneNames <- setdiff(targetNames, allGeneNames)
+            if (length(missingGeneNames) != 0) stop(paste("Target genes missing from the expression matrix:", paste(missingGeneNames, collapse=", ")))
+        }
+    }
+    
+    nGenes <- length(targetNames)
+    rm(targets)
+    
+    # set random number generator seed if seed is given
+    if (!is.null(seed)) set.seed(seed)
+    
+    # tree method
+    if (treeMethod == 'RF') 
+    {
+    	RF_randomisation <- 1
+    	ET_randomisation <- 0
+    	bootstrap_sampling <- 1
     } else {
-      input.gene.names <- regulators
-      # for security, abort if some input gene name is not in gene names
-      missing.gene.names <- setdiff(input.gene.names, gene.names)
-      if (length(missing.gene.names) != 0) stop(paste("Genes missing in the expression matrix:", paste(missing.gene.names, collapse=", ")))
+    	RF_randomisation <- 0
+    	ET_randomisation <- 1
+    	bootstrap_sampling <- 0
     }
-  }
-  rm(regulators)
-
-  # set random number generator seed if seed is given
-  if (!is.null(seed)) set.seed(seed)
-
-	# tree method
-	if (tree.method == 'RF') {
-		RF_randomisation <- 1
-		ET_randomisation <- 0
-		bootstrap_sampling <- 1
-	} else {
-		RF_randomisation <- 0
-		ET_randomisation <- 1
-		bootstrap_sampling <- 0
-	}
-
-	if (verbose) message(paste("Tree method: ", tree.method,
-	                           "\nK: ", K,
-	                            "\nNumber of trees: ", ntrees, sep=""))
-  # other default parameters
-  nmin <- 1
-  permutation_importance <- 0
-
-  # setup weight matrix
-  weight.matrix <- matrix(0.0, nrow=length(input.gene.names), ncol=num.genes)
-  rownames(weight.matrix) <- input.gene.names
-  colnames(weight.matrix) <- gene.names
-
-  # compute importances for every target gene
-  if (ncores==1) {
-  	# serial computing
-  	if (verbose) message("Using 1 core.")
-    for (target.gene.name in gene.names) {
-      if (verbose) message(paste("Computing gene ", which(gene.names == target.gene.name), "/", num.genes, ": ",target.gene.name, sep=""))
-
-      # remove target gene from input genes
-      these.input.gene.names <- setdiff(input.gene.names, target.gene.name)
-      num.input.genes <- length(these.input.gene.names)
-      mtry <- setMtry(K, num.input.genes)
-
-      x <- expr.matrix[,these.input.gene.names]
-      y <- expr.matrix[,target.gene.name]
-
-      im <- .C("BuildTreeEns",as.integer(num.samples),as.integer(num.input.genes),
-              as.single(c(x)),as.single(c(y)),as.integer(nmin),
-              as.integer(ET_randomisation),as.integer(RF_randomisation),
-              as.integer(mtry),as.integer(ntrees),
-              as.integer(bootstrap_sampling),as.integer(permutation_importance),
-              as.double(vector("double",num.input.genes)))[[12]]
-
-      # normalize variable importances
-      im <- im / sum(im)
-      weight.matrix[these.input.gene.names, target.gene.name] <- im
-    }
-	} else {
-	  #requireNamespace("foreach"); requireNamespace("doRNG"); requireNamespace("doParallel")
-	  require("foreach"); require("doRNG"); require("doParallel")
-
-		# parallel computing
-	  doParallel::registerDoParallel(); options(cores=ncores)
-    if (verbose) message(paste("\nUsing", foreach::getDoParWorkers(), "cores."))
-
-    weight.matrix.reg <- foreach::foreach(target.gene.name=gene.names, .combine=cbind) %dorng%
-	  # weight.matrix.reg <- doRNG::"%dorng%"(foreach::foreach(target.gene.name=gene.names, .combine=cbind),
+    
+    if (verbose) message(paste("Tree method: ", treeMethod,
+                               "\nK: ", K,
+                                "\nNumber of trees: ", nTrees, sep=""))
+    # other default parameters
+    nmin <- 1
+    permutation_importance <- 0
+    
+    # setup weight matrix
+    weightMatrix <- matrix(0.0, nrow=length(regulatorNames), ncol=nGenes)
+    rownames(weightMatrix) <- regulatorNames
+    colnames(weightMatrix) <- targetNames
+    
+    # compute importances for every target gene
+    if (nCores==1) 
     {
-      # remove target gene from input genes
-      these.input.gene.names <- setdiff(input.gene.names, target.gene.name)
-      num.input.genes <- length(these.input.gene.names)
-      mtry <- setMtry(K, num.input.genes)
-
-      x <- expr.matrix[,these.input.gene.names]
-      y <- expr.matrix[,target.gene.name]
-
-      im <- .C("BuildTreeEns",as.integer(num.samples),as.integer(num.input.genes),
-        as.single(c(x)),as.single(c(y)),as.integer(nmin),
-        as.integer(ET_randomisation),as.integer(RF_randomisation),
-        as.integer(mtry),as.integer(ntrees),
-        as.integer(bootstrap_sampling),as.integer(permutation_importance),
-        as.double(vector("double",num.input.genes)))[[12]]
-
-      # normalize variable importances
-      im <- im / sum(im)
-
-      c(setNames(0, target.gene.name), setNames(im, these.input.gene.names))[input.gene.names]
+        # serial computing
+        if (verbose) message("Using 1 core.")
+        for (targetName in targetNames) 
+        {
+            if (verbose) message(paste("Computing gene ", which(targetNames == targetName), "/", nGenes, ": ",targetName, sep=""))
+            
+            # remove target gene from input genes
+            theseRegulatorNames <- setdiff(regulatorNames, targetName)
+            numRegulators <- length(theseRegulatorNames)
+            mtry <- setMtry(K, numRegulators)
+            
+            x <- exprMatrix[,theseRegulatorNames]
+            y <- exprMatrix[,targetName]
+            
+            im <- .C("BuildTreeEns",as.integer(num.samples),as.integer(numRegulators),
+                  as.single(c(x)),as.single(c(y)),as.integer(nmin),
+                  as.integer(ET_randomisation),as.integer(RF_randomisation),
+                  as.integer(mtry),as.integer(nTrees),
+                  as.integer(bootstrap_sampling),as.integer(permutation_importance),
+                  as.double(vector("double",numRegulators)))[[12]]
+            
+            # normalize variable importances
+            im <- im / sum(im)
+            weightMatrix[theseRegulatorNames, targetName] <- im
+        }
+    } else 
+    {
+        #requireNamespace("foreach"); requireNamespace("doRNG"); requireNamespace("doParallel")
+        require("foreach"); require("doRNG"); require("doParallel")
+        
+        # parallel computing
+        doParallel::registerDoParallel(); options(cores=nCores)
+        if (verbose) message(paste("\nUsing", foreach::getDoParWorkers(), "cores."))
+        
+        weightMatrix.reg <- foreach::foreach(targetName=targetNames, .combine=cbind) %dorng%
+        # weightMatrix.reg <- doRNG::"%dorng%"(foreach::foreach(targetName=targetNames, .combine=cbind),
+        {
+            # remove target gene from input genes
+            theseRegulatorNames <- setdiff(regulatorNames, targetName)
+            numRegulators <- length(theseRegulatorNames)
+            mtry <- setMtry(K, numRegulators)
+            
+            x <- exprMatrix[,theseRegulatorNames]
+            y <- exprMatrix[,targetName]
+            
+            im <- .C("BuildTreeEns", as.integer(num.samples), as.integer(numRegulators),
+            as.single(c(x)),as.single(c(y)), as.integer(nmin),
+            as.integer(ET_randomisation), as.integer(RF_randomisation),
+            as.integer(mtry), as.integer(nTrees),
+            as.integer(bootstrap_sampling), as.integer(permutation_importance),
+            as.double(vector("double",numRegulators)))[[12]]
+            
+            # normalize variable importances
+            im <- im / sum(im)
+            
+            c(setNames(0, targetName), setNames(im, theseRegulatorNames))[regulatorNames]
+        }
+        attr(weightMatrix.reg, "rng") <- NULL
+        weightMatrix[regulatorNames,] <- weightMatrix.reg
     }
-    attr(weight.matrix.reg, "rng") <- NULL
-    weight.matrix[input.gene.names,] <- weight.matrix.reg
-	}
-  return(weight.matrix)
+    return(weightMatrix)
 }
 
-# mtry <- setMtry(K, num.input.genes)
-setMtry <- function(K, num.input.genes)
+# mtry <- setMtry(K, numRegulators)
+setMtry <- function(K, numRegulators)
 {
   # set mtry
   if (class(K) == "numeric") {
     mtry <- K
   } else if (K == "sqrt") {
-    mtry <- round(sqrt(num.input.genes))
+    mtry <- round(sqrt(numRegulators))
   } else {
-    mtry <- num.input.genes
+    mtry <- numRegulators
   }
 
   return(mtry)

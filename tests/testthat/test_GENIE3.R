@@ -1,46 +1,74 @@
 test_that("GENIE3 tests", {
 
-	expr.matrix <- matrix(sample(1:10, 100, replace=TRUE), nrow=20)
-	rownames(expr.matrix) <- paste("Gene", 1:20, sep="")
-	colnames(expr.matrix) <- paste("Sample", 1:5, sep="")
+	exprMatrix <- matrix(sample(1:10, 100, replace=TRUE), nrow=20)
+	rownames(exprMatrix) <- paste("Gene", 1:20, sep="")
+	colnames(exprMatrix) <- paste("Sample", 1:5, sep="")
 
-	weight.matrix <- GENIE3(expr.matrix)
+	# Default parameters
+	weightMatrix <- GENIE3(exprMatrix)
 
-	expect_equal(dim(weight.matrix)[1], 20)
-	expect_equal(dim(weight.matrix)[2], 20)
-	expect_true(is.numeric(weight.matrix))
-	expect_equal(sum(is.na(weight.matrix)), 0)
-	expect_equal(sum(weight.matrix < 0), 0)
-	expect_equal(sum(diag(weight.matrix)), 0)
-	expect_equal(sum(rownames(weight.matrix) == colnames(weight.matrix)), 20)
-	expect_equal(sum(rownames(weight.matrix) == rownames(expr.matrix)), 20)
+	expect_equal(dim(weightMatrix)[1], 20)
+	expect_equal(dim(weightMatrix)[2], 20)
+	expect_true(is.numeric(weightMatrix))
+	expect_equal(sum(is.na(weightMatrix)), 0)
+	expect_equal(sum(weightMatrix < 0), 0)
+	expect_equal(sum(diag(weightMatrix)), 0)
+	expect_equal(sum(rownames(weightMatrix) == colnames(weightMatrix)), 20)
+	expect_equal(sum(rownames(weightMatrix) == rownames(exprMatrix)), 20)
 
-
+    #### Regulators as number
 	regulators <- c(2,4,6)
-	weight.matrix <- GENIE3(expr.matrix, tree.method="ET", K="all", ntrees=100, regulators=regulators)
-	zidx <- setdiff(1:20, regulators)
-	# expect_equal(sum(weight.matrix[zidx,]), 0)
-	expect_equal(sum(weight.matrix < 0), 0)
-	expect_equal(nrow(weight.matrix), 3)
-	expect_equal(ncol(weight.matrix), 20)
-	expect_true(is.numeric(weight.matrix))
-	expect_equal(sum(is.na(weight.matrix)), 0)
-	expect_equal(sum(diag(weight.matrix[,rownames(weight.matrix)])), 0)
-	# expect_equal(sum(rownames(weight.matrix) == colnames(weight.matrix)), 20)
-	expect_equal(sum(colnames(weight.matrix) == rownames(expr.matrix)), 20)
+	weightMatrix <- GENIE3(exprMatrix, nTree=100, regulators=regulators)
+	expect_equal(sum(weightMatrix < 0), 0)
+	expect_equal(nrow(weightMatrix), 3)
+	expect_equal(ncol(weightMatrix), 20)
+	expect_true(is.numeric(weightMatrix))
+	expect_equal(sum(is.na(weightMatrix)), 0)
+	expect_equal(sum(diag(weightMatrix[,rownames(weightMatrix)])), 0)
+	# expect_equal(sum(rownames(weightMatrix) == colnames(weightMatrix)), 20)
+	expect_equal(sum(colnames(weightMatrix) == rownames(exprMatrix)), 20)
 
-
-	regulators <- rownames(expr.matrix)[c(5,9)]
-	weight.matrix <- GENIE3(expr.matrix, tree.method="ET", K=1, ntrees=100, regulators=regulators)
-	zidx <- setdiff(colnames(weight.matrix), regulators)
-	# expect_equal(sum(weight.matrix[zidx,]), 0)
-	expect_equal(sum(weight.matrix < 0), 0)
-	expect_equal(nrow(weight.matrix), 2)
-	expect_equal(ncol(weight.matrix), 20)
-	expect_true(is.numeric(weight.matrix))
-	expect_equal(sum(is.na(weight.matrix)), 0)
-	expect_equal(sum(diag(weight.matrix[,rownames(weight.matrix)])), 0)
-	# expect_equal(sum(rownames(weight.matrix) == colnames(weight.matrix)), 20)
-	expect_equal(sum(colnames(weight.matrix) == rownames(expr.matrix)), 20)
+	#### Regulators as name
+	regulators <- rownames(exprMatrix)[c(5,9)]
+	weightMatrix <- GENIE3(exprMatrix, treeMethod="ET", K=1, nTree=100, regulators=regulators)
+	expect_equal(sum(weightMatrix < 0), 0)
+	expect_equal(nrow(weightMatrix), 2)
+	expect_equal(ncol(weightMatrix), 20)
+	expect_true(is.numeric(weightMatrix))
+	expect_equal(sum(is.na(weightMatrix)), 0)
+	expect_equal(sum(diag(weightMatrix[,rownames(weightMatrix)])), 0)
+	# expect_equal(sum(rownames(weightMatrix) == colnames(weightMatrix)), 20)
+	expect_equal(sum(colnames(weightMatrix) == rownames(exprMatrix)), 20)
+	
+	#### Targets as number
+	regulators <- c(2,4,6)
+	targets <- c(1,5)
+	weightMatrix <- GENIE3(exprMatrix, regulators=regulators, targets=targets)
+	expect_equal(nrow(weightMatrix), 3)
+	expect_equal(ncol(weightMatrix), 2)
+	
+	#### Targets as name
+	targets <- rownames(exprMatrix)[c(5,9)]
+	weightMatrix <- GENIE3(exprMatrix, targets=targets)
+	expect_equal(nrow(weightMatrix), 20)
+	expect_equal(ncol(weightMatrix), 2)
+	
+	#### Only one target (Note that the regulator is included, and will take all the weight...)
+	weightMatrix <- GENIE3(exprMatrix, regulators=2:3, targets=3)
+	expect_equal(ncol(weightMatrix), 1)
+	
+	
+	### Other input classes:
+	eset <- Biobase::ExpressionSet(assayData=exprMatrix)
+	weightMatrix <- GENIE3(eset)
+	expect_equal(class(weightMatrix), "matrix")
+	
+	sexp <- SummarizedExperiment::SummarizedExperiment(assays=list(counts=exprMatrix))
+	expect_warning(wm <- GENIE3(sexp))
+	expect_equal(class(wm), "matrix")
+	
+	sce <- scater::newSCESet(countData=exprMatrix)
+	expect_warning(wm <- GENIE3(sce))
+	expect_equal(class(wm), "matrix")
 })
 

@@ -1,0 +1,9 @@
+
+VERSION 0.99.2
+----------------------
+INTERFACE CHANGES
+    - Functions and parameters renamed to CamelCase rather than containing dots (e.g. get.link.list into getLinkList)
+    
+NEW FEATURES
+    - GENIE3 now accepts ExpressionSet, SummarizedExperiment and SCESet as input
+    
