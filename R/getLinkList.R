@@ -31,7 +31,7 @@ getLinkList <- function(weightMatrix, reportMax=NULL, threshold=0) {
 	# Only process weights off-diagonal
 	diag(weightMatrix) <- NA
     linkList <- reshape2::melt(weightMatrix, na.rm=TRUE)
-    colnames(linkList) <- c("regulatory.gene", "target.gene", "weight")
+    colnames(linkList) <- c("regulatoryGene", "targetGene", "weight")
     linkList <- linkList[linkList$weight>=threshold,]
     linkList <- linkList[order(linkList$weight, decreasing=TRUE),]
 
