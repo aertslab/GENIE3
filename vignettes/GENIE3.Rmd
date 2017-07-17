@@ -42,14 +42,15 @@ The following command runs GENIE3 on the expression data `exprMatr` with the def
 
 ```{r}
 library(GENIE3)
-weightMatr <- GENIE3(exprMatr)
+set.seed(123) # For reproducibility of results
+weightMat <- GENIE3(exprMatr)
 ```
 ```{r}
-dim(weightMatr)
-weightMatr[1:5,1:5]
+dim(weightMat)
+weightMat[1:5,1:5]
 ```
 
-The algorithm outputs a matrix containing the weights of the putative regulatory links, with higher weights corresponding to more likely regulatory links. `weightMatr[i,j]` is the weight of the link directed from the $i$-th gene to $j$-th gene.
+The algorithm outputs a matrix containing the weights of the putative regulatory links, with higher weights corresponding to more likely regulatory links. `weightMat[i,j]` is the weight of the link directed from the $i$-th gene to $j$-th gene.
 
 ### Restrict the candidate regulators to a subset of genes
 
@@ -60,10 +61,10 @@ By default, all the genes in `exprMatr` are used as candidate regulators. The li
 regulators <- c(2, 4, 7)
 # Or alternatively:
 regulators <- c("Gene2", "Gene4", "Gene7")
-weightMatr <- GENIE3(exprMatr, regulators=regulators)
+weightMat <- GENIE3(exprMatr, regulators=regulators)
 ```
 
-Here, only `Gene2`, `Gene4` and `Gene7` (respectively corresponding to rows 2, 4 and 7 in `exprMatr`) were used as candidate regulators. In the resulting `weightMatr`, the links that are directed from genes that are not candidate regulators have a weight equal to 0.
+Here, only `Gene2`, `Gene4` and `Gene7` (respectively corresponding to rows 2, 4 and 7 in `exprMatr`) were used as candidate regulators. In the resulting `weightMat`, the links that are directed from genes that are not candidate regulators have a weight equal to 0.
 
 
 ### Change the tree-based method and its settings
@@ -85,7 +86,7 @@ An example is shown below:
 # Use Extra-Trees (ET) method
 # 7 randomly chosen candidate regulators at each node of a tree
 # 5 trees per ensemble
-weightMatr <- GENIE3(exprMatr, treeMethod="ET", K=7, nTrees=50)
+weightMat <- GENIE3(exprMatr, treeMethod="ET", K=7, nTrees=50)
 ```
 
 
@@ -94,8 +95,12 @@ weightMatr <- GENIE3(exprMatr, treeMethod="ET", K=7, nTrees=50)
 To decrease the computing times, GENIE3 can be run on multiple cores. The parameter `ncores` specifies the number of cores you want to use. For example:
 
 ```{r eval=FALSE}
-weightMatr <- GENIE3(exprMatr, nCores=4, verbose=TRUE)
+set.seed(123) # For reproducibility of results
+weightMat <- GENIE3(exprMatr, nCores=4, verbose=TRUE)
 ```
+
+Note that `seet.seed` allows to get the same results across different runs, but only within `nCores==1` or `nCores>1`. e.g. A run with `set.seed(123)` and `nCores=1` and another with the same seed but `nCores>1` may provide different results.
+
 
 ### Obtain more information
 
@@ -111,7 +116,7 @@ weightMatr <- GENIE3(exprMatr, nCores=4, verbose=TRUE)
 You can obtain the list of all the regulatory links (from most likely to least likely) with this command:
 
 ```{r}
-linkList <- getLinkList(weightMatr)
+linkList <- getLinkList(weightMat)
 dim(linkList)
 head(linkList)
 ```
@@ -126,7 +131,7 @@ The resulting `linkList` matrix contains the ranking of links. Each row correspo
 Usually, one is only interested in extracting the most likely regulatory links. The optional parameter `report.max` sets the number of top-ranked links to report:
 
 ```{r eval=FALSE}
-linkList <- getLinkList(weightMatr, reportMax=5)
+linkList <- getLinkList(weightMat, reportMax=5)
 ```
 
 
@@ -135,7 +140,7 @@ linkList <- getLinkList(weightMatr, reportMax=5)
 Alternatively, a threshold can be set on the weights of the links:
 
 ```{r eval=FALSE}
-linkList <- getLinkList(weightMatr, threshold=0.1)
+linkList <- getLinkList(weightMat, threshold=0.1)
 ```
 
 ### *Important note* on the interpretation of the weights

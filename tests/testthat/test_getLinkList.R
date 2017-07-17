@@ -10,7 +10,7 @@ test_that("getLinkList works properly", {
 	expect_true(is.numeric(linkList[,"weight"]))
 	expect_equal(sum(is.na(linkList[,"weight"])), 0)
 	i <- sample(1:90, size=1)
-	expect_equal(weightMatrix[linkList[i,"regulatory.gene"],linkList[i,"target.gene"]], linkList[i,"weight"])
+	expect_equal(weightMatrix[linkList[i,"regulatoryGene"],linkList[i,"targetGene"]], linkList[i,"weight"])
 	expect_equal(linkList[1,3], max(weightMatrix))
 	diag(weightMatrix) <- NA
 	expect_equal(linkList[90,3], min(weightMatrix, na.rm=TRUE))
@@ -24,7 +24,7 @@ test_that("getLinkList works properly", {
 	expect_true(is.numeric(linkList[,"weight"]))
 	expect_equal(sum(is.na(linkList[,"weight"])), 0)
 	i <- sample(1:nlinks, size=1)
-	expect_equal(weightMatrix[linkList[i,"regulatory.gene"],linkList[i,"target.gene"]], linkList[i,"weight"])
+	expect_equal(weightMatrix[linkList[i,"regulatoryGene"],linkList[i,"targetGene"]], linkList[i,"weight"])
 	expect_equal(linkList[1,3], max(weightMatrix))
 
 	linkList <- getLinkList(weightMatrix, threshold=0.3)
@@ -34,7 +34,7 @@ test_that("getLinkList works properly", {
 	expect_true(is.numeric(linkList[,"weight"]))
 	expect_equal(sum(is.na(linkList[,"weight"])), 0)
 	i <- sample(1:nlinks, size=1)
-	expect_equal(weightMatrix[linkList[i,"regulatory.gene"],linkList[i,"target.gene"]], linkList[i,"weight"])
+	expect_equal(weightMatrix[linkList[i,"regulatoryGene"],linkList[i,"targetGene"]], linkList[i,"weight"])
 	expect_equal(linkList[1,3], max(weightMatrix))
 })
 

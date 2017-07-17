@@ -63,7 +63,7 @@ test_that("GENIE3 tests", {
 	expect_equal(class(GENIE3(eset)), "matrix")
 	
 	sexp <- SummarizedExperiment::SummarizedExperiment(assays=list(counts=exprMatrix))
-	expect_warning(wm <- GENIE3(sexp))
+	wm <- GENIE3(sexp)
 	expect_equal(class(wm), "matrix")
 	
 	# sce <- scater::newSCESet(countData=exprMatrix)

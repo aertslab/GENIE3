@@ -5,15 +5,14 @@
 \title{GENIE3}
 \usage{
 GENIE3(exprMatrix, treeMethod = "RF", K = "sqrt", nTrees = 1000,
-  regulators = NULL, targets = NULL, nCores = 1, verbose = FALSE,
-  seed = NULL)
+  regulators = NULL, targets = NULL, nCores = 1, verbose = FALSE)
 }
 \arguments{
 \item{exprMatrix}{Expression matrix (genes x samples). Every row is a gene, every column is a sample.
 The expression matrix can also be provided as one of the Bioconductor classes:
 \itemize{
-\item \link[Biobase]{ExpressionSet}: The matrix will be obtained through assay(exprMatrix), wich will extract the first assay (usually the counts).
-\item \link[SummarizedExperiment]{RangedSummarizedExperiment}: The matrix will be obtained through exprs(exprMatrix)
+\item \link[Biobase]{ExpressionSet}: The matrix will be obtained through exprs(exprMatrix)
+\item \link[SummarizedExperiment]{RangedSummarizedExperiment}: The matrix will be obtained through assay(exprMatrix), wich will extract the first assay (usually the counts)
 }}
 
 \item{treeMethod}{Tree-based method used. Must be either "RF" for Random Forests (default) or "ET" for Extra-Trees.}
@@ -29,8 +28,6 @@ The expression matrix can also be provided as one of the Bioconductor classes:
 \item{nCores}{Number of cores to use for parallel computing. Default: 1.}
 
 \item{verbose}{If set to TRUE, a feedback on the progress of the calculations is given. Default: FALSE.}
-
-\item{seed}{Random number generator seed for replication of analyses. The default value NULL means that the seed is not reset.}
 }
 \value{
 Weighted adjacency matrix of inferred network. Element w_ij (row i, column j) gives the importance of the link from regulatory gene i to target gene j.
@@ -45,6 +42,7 @@ rownames(exprMatrix) <- paste("Gene", 1:20, sep="")
 colnames(exprMatrix) <- paste("Sample", 1:5, sep="")
 
 ## Run GENIE3
+set.seed(123) # For reproducibility of results
 weightMatrix <- GENIE3(exprMatrix, regulators=paste("Gene", 1:5, sep=""))
 
 ## Get ranking of edges
