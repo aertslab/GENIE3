@@ -1,2 +1,2 @@
-library(testthat)
-test_check("GENIE3")
+# library(testthat)
+testthat::test_check("GENIE3")
