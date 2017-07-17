@@ -1,5 +1,5 @@
 test_that("GENIE3 tests", {
-
+  
 	exprMatrix <- matrix(sample(1:10, 100, replace=TRUE), nrow=20)
 	rownames(exprMatrix) <- paste("Gene", 1:20, sep="")
 	colnames(exprMatrix) <- paste("Sample", 1:5, sep="")
@@ -68,5 +68,6 @@ test_that("GENIE3 tests", {
 	
 	# sce <- scater::newSCESet(countData=exprMatrix)
 	# testthat::expect_equal(class(GENIE3(sce)), "matrix")
+	
 })
 

@@ -1,4 +1,5 @@
 test_that("getLinkList works properly", {
+  
 	weightMatrix <- matrix(runif(100), nrow=10)
 	rownames(weightMatrix) <- paste("Gene", 1:10, sep="")
 	colnames(weightMatrix) <- paste("Gene", 1:10, sep="")

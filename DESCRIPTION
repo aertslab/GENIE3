@@ -9,7 +9,7 @@ Description: This package implements the GENIE3 algorithm for inferring gene
     regulatory networks from expression data.
 License: GPL (>= 2)
 LazyData: TRUE
-Imports: stats, reshape2, testthat
+Imports: stats, reshape2, testthat 
 Suggests: knitr, rmarkdown, foreach, doRNG, doParallel, Biobase, SummarizedExperiment
 NeedsCompilation: yes
 RoxygenNote: 6.0.1
