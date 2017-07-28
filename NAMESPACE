@@ -1,0 +1,4 @@
+useDynLib(GENIE3)
+export(GENIE3)
+export(getLinkList)
+importFrom("stats", "sd", "setNames")
