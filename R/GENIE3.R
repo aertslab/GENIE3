@@ -179,7 +179,8 @@ function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, ta
       if(verbose) message(paste("\nUsing", foreach::getDoParWorkers(), "cores."))
 
       # weightMatrix.reg <- foreach::foreach(targetName=targetNames, .combine=cbind) %dorng%
-      weightMatrix.reg <- doRNG::"%dorng%"(foreach::foreach(targetName=targetNames, .combine=cbind),
+      "%dopar%"<- foreach::"%dopar%"
+      suppressPackageStartupMessages(weightMatrix.reg <- doRNG::"%dorng%"(foreach::foreach(targetName=targetNames, .combine=cbind),
       {
           # remove target gene from input genes
           theseRegulatorNames <- setdiff(regulatorNames, targetName)
@@ -200,7 +201,7 @@ function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, ta
           im <- im / sum(im)
 
           c(setNames(0, targetName), setNames(im, theseRegulatorNames))[regulatorNames]
-      })
+      }))
       attr(weightMatrix.reg, "rng") <- NULL
       weightMatrix[regulatorNames,] <- weightMatrix.reg
   }
