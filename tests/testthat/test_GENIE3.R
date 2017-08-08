@@ -1,4 +1,3 @@
-
 .checkGenie3_output <- function(weightMatrix, exprMatrix)
 {
   testthat::expect_equal(dim(weightMatrix)[1], 20)
