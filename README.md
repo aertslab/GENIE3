@@ -3,14 +3,15 @@ GENIE3 (GEne Network Inference with Ensemble of trees) R-package
 
 
 
-*Note:* This is a version in development. The main version of the package will be submitted Bioconductor. 
+We recommend to **install** GENIE3 from [Bioconductor](https://bioconductor.org/packages/devel/bioc/html/GENIE3.html). This Github repository is meant mostly for development.
 
-To install this BETA version, you can run the following commands from R:
+A **tutorial** [(vignette)](https://bioconductor.org/packages/devel/bioc/vignettes/GENIE3/inst/doc/GENIE3.html) is included in the package.
+
+
+To install the development version, you can run the following commands from R:
 ```
-devtools::install_github("aertslab/GENIE3", build_vignettes = TRUE)
+install.packages("https://bioconductor.org/packages/devel/bioc/src/contrib/GENIE3_0.99.7.tar.gz", repos=NULL)
 
 # You might need to install these packages first:
-install.packages(c("devtools", "stats", "reshape2"))
+install.packages(c("stats", "reshape2"))
 ```
-
-A tutorial (vignette) is included in the package.
