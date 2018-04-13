@@ -1,11 +1,8 @@
 
-<<<<<<< HEAD
 VERSION 0.99.7
 ----------------------
     - Solved error for not found "%dopar%"
     
-=======
->>>>>>> upstream/master
 VERSION 0.99.4
 ----------------------
     Removed argument "seed", use set.seed instead
