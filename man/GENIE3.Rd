@@ -4,26 +4,26 @@
 \alias{GENIE3}
 \title{GENIE3}
 \usage{
-GENIE3(exprMatrix, treeMethod = "RF", K = "sqrt", nTrees = 1000,
-  regulators = NULL, targets = NULL, nCores = 1, verbose = FALSE)
+GENIE3(exprMatrix, regulators = NULL, targets = NULL, treeMethod = "RF",
+  K = "sqrt", nTrees = 1000, nCores = 1, verbose = FALSE)
 }
 \arguments{
 \item{exprMatrix}{Expression matrix (genes x samples). Every row is a gene, every column is a sample.
 The expression matrix can also be provided as one of the Bioconductor classes:
 \itemize{
-\item \link[Biobase]{ExpressionSet}: The matrix will be obtained through exprs(exprMatrix)
-\item \link[SummarizedExperiment]{RangedSummarizedExperiment}: The matrix will be obtained through assay(exprMatrix), wich will extract the first assay (usually the counts)
+\item \code{ExpressionSet}: The matrix will be obtained through exprs(exprMatrix)
+\item \code{RangedSummarizedExperiment}: The matrix will be obtained through assay(exprMatrix), wich will extract the first assay (usually the counts)
 }}
+
+\item{regulators}{Subset of genes used as candidate regulators. Must be either a vector of indices, e.g. \code{c(1,5,6,7)}, or a vector of gene names, e.g. \code{c("at_12377", "at_10912")}. The default value NULL means that all the genes are used as candidate regulators.}
+
+\item{targets}{Subset of genes to which potential regulators will be calculated. Must be either a vector of indices, e.g. \code{c(1,5,6,7)}, or a vector of gene names, e.g. \code{c("at_12377", "at_10912")}. If NULL (default), regulators will be calculated for all genes in the input matrix.}
 
 \item{treeMethod}{Tree-based method used. Must be either "RF" for Random Forests (default) or "ET" for Extra-Trees.}
 
 \item{K}{Number of candidate regulators randomly selected at each tree node (for the determination of the best split). Must be either "sqrt" for the square root of the total number of candidate regulators (default), "all" for the total number of candidate regulators, or a stricly positive integer.}
 
 \item{nTrees}{Number of trees in an ensemble for each target gene. Default: 1000.}
-
-\item{regulators}{Subset of genes used as candidate regulators. Must be either a vector of indices, e.g. \code{c(1,5,6,7)}, or a vector of gene names, e.g. \code{c("at_12377", "at_10912")}. The default value NULL means that all the genes are used as candidate regulators.}
-
-\item{targets}{Subset of genes to which potential regulators will be calculated. Must be either a vector of indices, e.g. \code{c(1,5,6,7)}, or a vector of gene names, e.g. \code{c("at_12377", "at_10912")}. If NULL (default), regulators will be calculated for all genes in the input matrix.}
 
 \item{nCores}{Number of cores to use for parallel computing. Default: 1.}
 

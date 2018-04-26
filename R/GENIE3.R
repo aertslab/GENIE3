@@ -5,14 +5,14 @@
 #' @param exprMatrix Expression matrix (genes x samples). Every row is a gene, every column is a sample.
 #' The expression matrix can also be provided as one of the Bioconductor classes:
 #' \itemize{
-#' \item \link[Biobase]{ExpressionSet}: The matrix will be obtained through exprs(exprMatrix)
-#' \item \link[SummarizedExperiment]{RangedSummarizedExperiment}: The matrix will be obtained through assay(exprMatrix), wich will extract the first assay (usually the counts)
+#' \item \code{ExpressionSet}: The matrix will be obtained through exprs(exprMatrix)
+#' \item \code{RangedSummarizedExperiment}: The matrix will be obtained through assay(exprMatrix), wich will extract the first assay (usually the counts)
 #' }
+#' @param regulators Subset of genes used as candidate regulators. Must be either a vector of indices, e.g. \code{c(1,5,6,7)}, or a vector of gene names, e.g. \code{c("at_12377", "at_10912")}. The default value NULL means that all the genes are used as candidate regulators.
+#' @param targets Subset of genes to which potential regulators will be calculated. Must be either a vector of indices, e.g. \code{c(1,5,6,7)}, or a vector of gene names, e.g. \code{c("at_12377", "at_10912")}. If NULL (default), regulators will be calculated for all genes in the input matrix.
 #' @param treeMethod Tree-based method used. Must be either "RF" for Random Forests (default) or "ET" for Extra-Trees.
 #' @param K Number of candidate regulators randomly selected at each tree node (for the determination of the best split). Must be either "sqrt" for the square root of the total number of candidate regulators (default), "all" for the total number of candidate regulators, or a stricly positive integer.
 #' @param nTrees Number of trees in an ensemble for each target gene. Default: 1000.
-#' @param regulators Subset of genes used as candidate regulators. Must be either a vector of indices, e.g. \code{c(1,5,6,7)}, or a vector of gene names, e.g. \code{c("at_12377", "at_10912")}. The default value NULL means that all the genes are used as candidate regulators.
-#' @param targets Subset of genes to which potential regulators will be calculated. Must be either a vector of indices, e.g. \code{c(1,5,6,7)}, or a vector of gene names, e.g. \code{c("at_12377", "at_10912")}. If NULL (default), regulators will be calculated for all genes in the input matrix.
 #' @param nCores Number of cores to use for parallel computing. Default: 1.
 #' @param verbose If set to TRUE, a feedback on the progress of the calculations is given. Default: FALSE.
 #'
@@ -33,46 +33,48 @@
 #' head(linkList)
 #' @export
 setGeneric("GENIE3", signature="exprMatrix",
-function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, targets=NULL, nCores=1, verbose=FALSE)
+function(exprMatrix, regulators=NULL, targets=NULL, 
+         treeMethod="RF", K="sqrt", nTrees=1000, 
+         nCores=1, verbose=FALSE)
 {
   standardGeneric("GENIE3")
 })
 
 #' @export
 setMethod("GENIE3", "matrix",
-function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, targets=NULL, nCores=1, verbose=FALSE)
+function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", nTrees=1000, nCores=1, verbose=FALSE)
 {
-  .GENIE3(exprMatrix=exprMatrix, treeMethod=treeMethod, K=K, nTrees=nTrees, regulators=regulators, targets=targets, nCores=nCores, verbose=verbose)
+  .GENIE3(exprMatrix=exprMatrix, regulators=regulators, targets=targets, treeMethod=treeMethod, K=K, nTrees=nTrees, nCores=nCores, verbose=verbose)
 })
 
 #' @export
 setMethod("GENIE3", "SummarizedExperiment",
-function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, targets=NULL, nCores=1, verbose=FALSE)
+function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", nTrees=1000, nCores=1, verbose=FALSE)
 {
   if(length(SummarizedExperiment::assays(exprMatrix))>1) warning("More than 1 assays are available. Only using the first one.")
   exprMatrix <- SummarizedExperiment::assay(exprMatrix)
-  .GENIE3(exprMatrix=exprMatrix, treeMethod=treeMethod, K=K, nTrees=nTrees, regulators=regulators, targets=targets, nCores=nCores, verbose=verbose)
+  .GENIE3(exprMatrix=exprMatrix, regulators=regulators, targets=targets, treeMethod=treeMethod, K=K, nTrees=nTrees, nCores=nCores, verbose=verbose)
 })
 
 #' @export
 setMethod("GENIE3", "ExpressionSet",
-function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, targets=NULL, nCores=1, verbose=FALSE)
+function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", nTrees=1000, nCores=1, verbose=FALSE)
 {
   exprMatrix <- Biobase::exprs(exprMatrix)
-  .GENIE3(exprMatrix=exprMatrix, treeMethod=treeMethod, K=K, nTrees=nTrees, regulators=regulators, targets=targets, nCores=nCores, verbose=verbose)
+  .GENIE3(exprMatrix=exprMatrix, regulators=regulators, targets=targets, treeMethod=treeMethod, K=K, nTrees=nTrees, nCores=nCores, verbose=verbose)
 })
 
-.GENIE3 <- function(exprMatrix, treeMethod, K, nTrees, regulators, targets, nCores, verbose)
+.GENIE3 <- function(exprMatrix, regulators, targets, treeMethod, K, nTrees, nCores, verbose)
 {
-  .checkArguments(exprMatrix=exprMatrix, treeMethod=treeMethod, K=K, nTrees=nTrees, regulators=regulators, targets=targets, nCores=nCores, verbose=verbose)
+  .checkArguments(exprMatrix=exprMatrix, regulators=regulators, targets=targets, treeMethod=treeMethod, K=K, nTrees=nTrees, nCores=nCores, verbose=verbose)
   
   if(is.numeric(regulators)) regulators <- rownames(exprMatrix)[regulators]
   
   ############################################################
   # transpose expression matrix to (samples x genes)
-  exprMatrix <- t(exprMatrix)
-  num.samples <- nrow(exprMatrix)
-  allGeneNames <- colnames(exprMatrix)
+  exprMatrixT <- t(exprMatrix); rm(exprMatrix)
+  num.samples <- nrow(exprMatrixT)
+  allGeneNames <- colnames(exprMatrixT)
 
   # get names of input genes
   if(is.null(regulators))
@@ -93,6 +95,7 @@ function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, ta
       if (length(missingGeneNames) != 0) stop(paste("Regulator genes missing from the expression matrix:", paste(missingGeneNames, collapse=", ")))
     }
   }
+  regulatorNames <- sort(regulatorNames)
   rm(regulators)
 
   # get names of target genes
@@ -114,7 +117,7 @@ function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, ta
       if (length(missingGeneNames) != 0) stop(paste("Target genes missing from the expression matrix:", paste(missingGeneNames, collapse=", ")))
     }
   }
-
+  targetNames <- sort(targetNames)
   nGenes <- length(targetNames)
   rm(targets)
 
@@ -138,7 +141,7 @@ function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, ta
   permutation_importance <- 0
 
   # setup weight matrix
-  weightMatrix <- matrix(0.0, nrow=length(regulatorNames), ncol=nGenes)
+  weightMatrix <- matrix(0.0, nrow=length(regulatorNames), ncol=length(targetNames))
   rownames(weightMatrix) <- regulatorNames
   colnames(weightMatrix) <- targetNames
 
@@ -156,8 +159,8 @@ function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, ta
       numRegulators <- length(theseRegulatorNames)
       mtry <- .setMtry(K, numRegulators)
     
-      x <- exprMatrix[,theseRegulatorNames]
-      y <- exprMatrix[,targetName]
+      x <- exprMatrixT[,theseRegulatorNames]
+      y <- exprMatrixT[,targetName]
     
       im <- .C("BuildTreeEns",as.integer(num.samples),as.integer(numRegulators),
             as.single(c(x)),as.single(c(y)),as.integer(nmin),
@@ -187,8 +190,8 @@ function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, ta
           numRegulators <- length(theseRegulatorNames)
           mtry <- .setMtry(K, numRegulators)
 
-          x <- exprMatrix[,theseRegulatorNames]
-          y <- exprMatrix[,targetName]
+          x <- exprMatrixT[,theseRegulatorNames]
+          y <- exprMatrixT[,targetName]
 
           im <- .C("BuildTreeEns", as.integer(num.samples), as.integer(numRegulators),
           as.single(c(x)),as.single(c(y)), as.integer(nmin),
@@ -203,8 +206,11 @@ function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, ta
           c(setNames(0, targetName), setNames(im, theseRegulatorNames))[regulatorNames]
       }))
       attr(weightMatrix.reg, "rng") <- NULL
-      weightMatrix[regulatorNames,] <- weightMatrix.reg
+      weightMatrix[regulatorNames,] <- weightMatrix.reg[regulatorNames,] 
   }
+  
+  # weightMatrix[which(weightMatrix < 0, arr.ind=TRUE)] <- 0
+  
   return(weightMatrix)
 }
 
@@ -223,7 +229,7 @@ function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, ta
   return(mtry)
 }
 
-.checkArguments <- function(exprMatrix, treeMethod, K, nTrees, regulators, targets, nCores, verbose)
+.checkArguments <- function(exprMatrix, regulators, targets, treeMethod, K, nTrees, nCores, verbose)
 {
   ############################################################
   # check input arguments
@@ -236,7 +242,7 @@ function(exprMatrix, treeMethod="RF", K="sqrt", nTrees=1000, regulators=NULL, ta
   }
   
   if (is.null(rownames(exprMatrix))) {
-    stop("exprMatrix must specify the names of the genes in rownames(exprMatrix).")
+    stop("exprMatrix must contain the names of the genes as rownames.")
   }
   
   if (treeMethod != "RF" && treeMethod != "ET") {
