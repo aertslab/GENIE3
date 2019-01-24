@@ -4,8 +4,9 @@
 \alias{GENIE3}
 \title{GENIE3}
 \usage{
-GENIE3(exprMatrix, regulators = NULL, targets = NULL, treeMethod = "RF",
-  K = "sqrt", nTrees = 1000, nCores = 1, verbose = FALSE)
+GENIE3(exprMatrix, regulators = NULL, targets = NULL,
+  treeMethod = "RF", K = "sqrt", nTrees = 1000, nCores = 1,
+  verbose = FALSE)
 }
 \arguments{
 \item{exprMatrix}{Expression matrix (genes x samples). Every row is a gene, every column is a sample.
