@@ -34,7 +34,7 @@ colnames(exprMatr) <- paste("Sample", 1:5, sep="")
 head(exprMatr)
 ```
 
-This matrix contains the expression data of 20 genes from 5 samples. Note that the expression data do not need to be normalised in any way.
+This matrix contains the expression data of 20 genes from 5 samples. The expression data does not need to be normalised in any particular way (but whether it is normalized/filtered/log-transformed WILL affect the results!). 
 
 ## How to run GENIE3
 
