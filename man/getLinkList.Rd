@@ -11,7 +11,7 @@ getLinkList(weightMatrix, reportMax = NULL, threshold = 0)
 
 \item{reportMax}{Maximum number of links to report. The default value NULL means that all the links are reported.}
 
-\item{threshold}{Only links with a weight above the threshold are reported. Default: threshold = 0, i.e. all the links are reported.}
+\item{threshold}{Only links with a weight equal or above the threshold are reported. Default: threshold = 0, i.e. all the links are reported.}
 }
 \value{
 List of regulatory links in a data frame. Each line of the data frame corresponds to a link. The first column is the regulatory gene, the second column is the target gene, and the third column is the weight of the link.

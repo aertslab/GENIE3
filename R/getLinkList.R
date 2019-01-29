@@ -4,7 +4,7 @@
 #'
 #' @param weightMatrix Weighted adjacency matrix as returned by \code{\link{GENIE3}}.
 #' @param reportMax Maximum number of links to report. The default value NULL means that all the links are reported.
-#' @param threshold Only links with a weight above the threshold are reported. Default: threshold = 0, i.e. all the links are reported.
+#' @param threshold Only links with a weight equal or above the threshold are reported. Default: threshold = 0, i.e. all the links are reported.
 #'
 #' @return List of regulatory links in a data frame. Each line of the data frame corresponds to a link. The first column is the regulatory gene, the second column is the target gene, and the third column is the weight of the link.
 #'
@@ -39,8 +39,11 @@ getLinkList <- function(weightMatrix, reportMax=NULL, threshold=0) {
   if(!is.null(reportMax)) {
   	linkList <- linkList[1:min(nrow(linkList), reportMax),]
   }
-  
   rownames(linkList) <- NULL
+  
+  uniquePairs <- nrow(unique(linkList[,c("regulatoryGene", "targetGene")]))
+  if(uniquePairs < nrow(linkList)) 
+    warning("There might be duplicated regulator-target (gene id/name) pairs.")
   
   return(linkList)
 }

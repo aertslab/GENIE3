@@ -234,16 +234,21 @@ function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", n
   ############################################################
   # check input arguments
   if (!is.matrix(exprMatrix) && !is.array(exprMatrix)) {
-    stop("Parameter exprMatrix must be a two-dimensional matrix where each row corresponds to a gene and each column corresponds to a condition/sample.")
+    stop("Parameter exprMatrix must be a two-dimensional matrix where each row corresponds to a gene and each column corresponds to a condition/sample/cell.")
   }
   
   if (length(dim(exprMatrix)) != 2) {
-    stop("Parameter exprMatrix must be a two-dimensional matrix where each row corresponds to a gene and each column corresponds to a condition/sample.")
+    stop("Parameter exprMatrix must be a two-dimensional matrix where each row corresponds to a gene and each column corresponds to a condition/sample/cell.")
   }
   
   if (is.null(rownames(exprMatrix))) {
     stop("exprMatrix must contain the names of the genes as rownames.")
   }
+  
+  countGeneNames <- table(rownames(exprMatrix))
+  nonUniqueGeneNames <- countGeneNames[countGeneNames>1]
+  if(length(nonUniqueGeneNames)>0) 
+    stop("The following gene IDs (rownames) are not unique: ", paste(names(nonUniqueGeneNames), collapse=", "))
   
   if (treeMethod != "RF" && treeMethod != "ET") {
     stop("Parameter treeMethod must be \"RF\" (Random Forests) or \"ET\" (Extra-Trees).")
@@ -264,20 +269,54 @@ function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", n
   if (!is.null(regulators))
   {
     if(length(regulators)<2) stop("Provide at least 2 potential regulators.")
-    
+
     if (!is.vector(regulators)) {
-      stop("Parameter regulators must be either a vector of indices or a vector of gene names.")
+      stop("Parameter 'regulators' must a vector (of indices or gene names).")
     }
-    
-    if (is.character(regulators) && length(intersect(regulators,rownames(exprMatrix))) == 0) {
-      stop("The genes must contain at least one candidate regulator.")
+
+    if (is.numeric(regulators)) {
+      if(max(regulators) > nrow(exprMatrix)) stop("At least one index in 'regulators' exceeds the number of genes.")
+      if(min(regulators) <= 0) stop("The indexes in 'regulators' should be >=1.")
     }
-    
-    if (is.numeric(regulators) && max(regulators) > nrow(exprMatrix)) {
-      stop("At least one index in regulators exceeds the number of genes.")
+
+    if(any(table(regulators)>1))
+      stop("Please, provide each regulator (name/ID) only once.")
+
+    if (is.character(regulators)){
+      regulatorsInMatrix <- intersect(regulators, rownames(exprMatrix))
+      if(length(regulatorsInMatrix) == 0)
+        stop("The genes must contain at least one regulators")
+
+      if(length(regulatorsInMatrix) < length(regulators))
+        warning("Only", length(regulatorsInMatrix), "out of", length(regulators), " candidate regulators (IDs/names) are in the expression matrix.")
     }
   }
-  
+
+  if (!is.null(targets))
+  {
+    if (!is.vector(targets)) {
+      stop("Parameter 'targets' must a vector (of indices or gene names).")
+    }
+
+    if (is.numeric(targets)) {
+      if(max(targets) > nrow(exprMatrix)) stop("At least one index in 'targets' exceeds the number of genes.")
+      if(min(targets) <= 0) stop("The indexes in 'targets' should be >=1.")
+    }
+
+    if(any(table(targets)>1))
+      stop("Please, provide each target (name/ID) only once.")
+
+    if (is.character(targets)){
+      targetsInMatrix <- intersect(targets, rownames(exprMatrix))
+      if(length(targetsInMatrix) == 0)
+        stop("The genes must contain at least one targets.")
+
+
+      if(length(targetsInMatrix) < length(targets))
+        warning("Only", length(targetsInMatrix), "out of", length(targets), "target genes (IDs/names) are in the expression matrix.")
+    }
+  }
+
   if (!is.numeric(nCores) || nCores<1)
   {
     stop("Parameter nCores should be a stricly positive integer.")
