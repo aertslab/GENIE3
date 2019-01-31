@@ -30,7 +30,7 @@ getLinkList <- function(weightMatrix, reportMax=NULL, threshold=0) {
 
 	# Only process weights off-diagonal
   regulatorsInTargets <- rownames(weightMatrix)[rownames(weightMatrix) %in% colnames(weightMatrix)]
-  diag(weightMatrix[regulatorsInTargets, regulatorsInTargets]) <- NA
+  diag(weightMatrix[regulatorsInTargets, regulatorsInTargets,drop=FALSE]) <- NA
   
   linkList <- reshape2::melt(weightMatrix, na.rm=TRUE)
   colnames(linkList) <- c("regulatoryGene", "targetGene", "weight")
