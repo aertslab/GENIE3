@@ -32,7 +32,7 @@ getLinkList <- function(weightMatrix, reportMax=NULL, threshold=0) {
   regulatorsInTargets <- rownames(weightMatrix)[rownames(weightMatrix) %in% colnames(weightMatrix)]
   if(length(regulatorsInTargets)==1) weightMatrix[regulatorsInTargets, regulatorsInTargets] <- NA
   if(length(regulatorsInTargets)>1) diag(weightMatrix[regulatorsInTargets, regulatorsInTargets]) <- NA
-  
+
   linkList <- reshape2::melt(weightMatrix, na.rm=TRUE)
   colnames(linkList) <- c("regulatoryGene", "targetGene", "weight")
   linkList <- linkList[linkList$weight>=threshold,]
