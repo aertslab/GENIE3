@@ -146,7 +146,7 @@ function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", n
   colnames(weightMatrix) <- targetNames
 
   # compute importances for every target gene
-  if(nCores==1)
+  if(nCores==1 && !foreach::getDoParRegistered())
   {
     # serial computing
     if(verbose) message("Using 1 core.")
@@ -178,7 +178,9 @@ function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", n
       # requireNamespace("foreach"); requireNamespace("doRNG"); requireNamespace("doParallel")
 
       # parallel computing
-      doParallel::registerDoParallel(); options(cores=nCores)
+      if (!foreach::getDoParRegistered()) {
+          doParallel::registerDoParallel(cores=nCores)
+      }
       if(verbose) message(paste("\nUsing", foreach::getDoParWorkers(), "cores."))
 
       # weightMatrix.reg <- foreach::foreach(targetName=targetNames, .combine=cbind) %dorng%
