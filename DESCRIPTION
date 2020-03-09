@@ -1,8 +1,8 @@
 Package: GENIE3
 Type: Package
 Title: GEne Network Inference with Ensemble of trees
-Version: 1.9.0
-Date: 2019-01-31
+Version: 1.9.1
+Date: 2020-03-09
 Author: Van Anh Huynh-Thu, Sara Aibar, Pierre Geurts
 Maintainer: Van Anh Huynh-Thu <vahuynh@ulg.ac.be>
 Description: This package implements the GENIE3 algorithm
@@ -13,7 +13,7 @@ Imports: stats, reshape2
 Suggests: knitr, rmarkdown, foreach, doRNG, doParallel,
  Biobase, SummarizedExperiment, testthat, methods
 NeedsCompilation: yes
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 VignetteBuilder: knitr
 biocViews: NetworkInference, SystemsBiology, DecisionTree, Regression,
  Network, GraphAndNetwork, GeneExpression
