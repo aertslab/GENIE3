@@ -66,11 +66,11 @@ test_that("GENIE3 tests", {
 
 	### Other input classes:
 	eset <- Biobase::ExpressionSet(assayData=exprMatrix)
-	testthat::expect_equivalent(class(GENIE3(eset)), "matrix")
+	testthat::expect_equivalent(class(GENIE3(eset))[1], "matrix")
 
 	sexp <- SummarizedExperiment::SummarizedExperiment(assays=list(counts=exprMatrix))
 	wm <- GENIE3(sexp)
-	testthat::expect_equivalent(class(wm), "matrix")
+	testthat::expect_equivalent(class(wm)[1], "matrix")
 
 	# sce <- scater::newSCESet(countData=exprMatrix)
 	# testthat::expect_equal(class(GENIE3(sce)), "matrix")
@@ -85,3 +85,4 @@ test_that("GENIE3 tests", {
 	# 
 	# .checkGenie3_output(weightMatrix_multicore1, exprMatrix)
 })
+

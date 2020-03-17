@@ -1,8 +1,8 @@
 Package: GENIE3
 Type: Package
 Title: GEne Network Inference with Ensemble of trees
-Version: 1.9.1
-Date: 2020-03-09
+Version: 1.9.2
+Date: 2020-03-17
 Author: Van Anh Huynh-Thu, Sara Aibar, Pierre Geurts
 Maintainer: Van Anh Huynh-Thu <vahuynh@ulg.ac.be>
 Description: This package implements the GENIE3 algorithm
