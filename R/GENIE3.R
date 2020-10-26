@@ -19,18 +19,18 @@
 #' @return Weighted adjacency matrix of inferred network. Element w_ij (row i, column j) gives the importance of the link from regulatory gene i to target gene j.
 #'
 #' @examples
-#' ## Generate fake expression matrix
-#' exprMatrix <- matrix(sample(1:10, 100, replace=TRUE), nrow=20)
-#' rownames(exprMatrix) <- paste("Gene", 1:20, sep="")
-#' colnames(exprMatrix) <- paste("Sample", 1:5, sep="")
-#'
-#' ## Run GENIE3
-#' set.seed(123) # For reproducibility of results
-#' weightMatrix <- GENIE3(exprMatrix, regulators=paste("Gene", 1:5, sep=""))
-#'
-#' ## Get ranking of edges
-#' linkList <- getLinkList(weightMatrix)
-#' head(linkList)
+# ## Generate fake expression matrix
+# exprMatrix <- matrix(sample(1:10, 100, replace=TRUE), nrow=20)
+# rownames(exprMatrix) <- paste("Gene", 1:20, sep="")
+# colnames(exprMatrix) <- paste("Sample", 1:5, sep="")
+# 
+# ## Run GENIE3
+# set.seed(123) # For reproducibility of results
+# weightMatrix <- GENIE3(exprMatrix, regulators=paste("Gene", 1:5, sep=""))
+# 
+# ## Get ranking of edges
+# linkList <- getLinkList(weightMatrix)
+# head(linkList)
 #' @export
 setGeneric("GENIE3", signature="exprMatrix",
 function(exprMatrix, regulators=NULL, targets=NULL, 
@@ -185,7 +185,7 @@ function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", n
 
       # weightMatrix.reg <- foreach::foreach(targetName=targetNames, .combine=cbind) %dorng%
       "%dopar%"<- foreach::"%dopar%"
-      suppressPackageStartupMessages(weightMatrix.reg <- doRNG::"%dorng%"(foreach::foreach(targetName=targetNames, .combine=cbind),
+      suppressPackageStartupMessages(weightMatrix.reg <- doRNG::"%dorng%"(foreach::foreach(targetName=targetNames),
       {
           # remove target gene from input genes
           theseRegulatorNames <- setdiff(regulatorNames, targetName)
@@ -205,9 +205,12 @@ function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", n
           # normalize variable importances
           im <- im / sum(im)
 
-          c(setNames(0, targetName), setNames(im, theseRegulatorNames))[regulatorNames]
+          setNames(list(c(setNames(0, targetName), setNames(im, theseRegulatorNames))[regulatorNames]), targetName)
       }))
       attr(weightMatrix.reg, "rng") <- NULL
+      attr(weightMatrix.reg,"doRNG_version") <- NULL
+      weightMatrix.reg <- do.call(cbind, unlist(weightMatrix.reg, recursive=F))
+      
       weightMatrix[regulatorNames,] <- weightMatrix.reg[regulatorNames,] 
   }
   
