@@ -12,6 +12,7 @@ GENIE3(
   K = "sqrt",
   nTrees = 1000,
   nCores = 1,
+  returnMatrix = TRUE,
   verbose = FALSE
 )
 }
@@ -23,7 +24,8 @@ The expression matrix can also be provided as one of the Bioconductor classes:
 \item \code{RangedSummarizedExperiment}: The matrix will be obtained through assay(exprMatrix), wich will extract the first assay (usually the counts)
 }}
 
-\item{regulators}{Subset of genes used as candidate regulators. Must be either a vector of indices, e.g. \code{c(1,5,6,7)}, or a vector of gene names, e.g. \code{c("at_12377", "at_10912")}. The default value NULL means that all the genes are used as candidate regulators.}
+\item{regulators}{Subset of genes used as candidate regulators. Must be either a vector of gene names, e.g. \code{c("at_12377", "at_10912")} or a vector of indices, e.g. \code{c(1,5,6,7)}. 
+The default value NULL means that all the genes are used as candidate regulators (which is NOT recommended). To provide different regulators for each gene, providethem as named list.}
 
 \item{targets}{Subset of genes to which potential regulators will be calculated. Must be either a vector of indices, e.g. \code{c(1,5,6,7)}, or a vector of gene names, e.g. \code{c("at_12377", "at_10912")}. If NULL (default), regulators will be calculated for all genes in the input matrix.}
 
@@ -34,6 +36,8 @@ The expression matrix can also be provided as one of the Bioconductor classes:
 \item{nTrees}{Number of trees in an ensemble for each target gene. Default: 1000.}
 
 \item{nCores}{Number of cores to use for parallel computing. Default: 1.}
+
+\item{returnMatrix}{Returns output as weight matrix (TRUE). Otherwise (FALSE) it is returned as a list.}
 
 \item{verbose}{If set to TRUE, a feedback on the progress of the calculations is given. Default: FALSE.}
 }
@@ -56,4 +60,13 @@ weightMatrix <- GENIE3(exprMatrix, regulators=paste("Gene", 1:5, sep=""))
 ## Get ranking of edges
 linkList <- getLinkList(weightMatrix)
 head(linkList)
+
+## Different regulators for each gene & return as list
+regulatorsList <- list("Gene1"=rownames(exprMatrix)[1:10],
+                       "Gene2"=rownames(exprMatrix)[10:20],
+                       "Gene20"=rownames(exprMatrix)[15:20])
+
+set.seed(123)
+weightList <- GENIE3(exprMatrix, nCores=1, targets=names(regulatorsList), regulators=regulatorsList, returnMatrix=FALSE)
+
 }

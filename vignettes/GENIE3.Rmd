@@ -68,6 +68,15 @@ weightMat <- GENIE3(exprMatr, regulators=regulators)
 
 Here, only `Gene2`, `Gene4` and `Gene7` (respectively corresponding to rows 2, 4 and 7 in `exprMatr`) were used as candidate regulators. In the resulting `weightMat`, the links that are directed from genes that are not candidate regulators have a weight equal to 0.
 
+To request different regulators for each gene & return as list:
+```{r}
+regulatorsList <- list("Gene1"=rownames(exprMatr)[1:10],
+                       "Gene2"=rownames(exprMatr)[10:20],
+                       "Gene20"=rownames(exprMatr)[15:20])
+set.seed(123)
+weightList <- GENIE3(exprMatr, nCores=1, targets=names(regulatorsList), regulators=regulatorsList, returnMatrix=FALSE)
+```
+
 
 ### Change the tree-based method and its settings
 

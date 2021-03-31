@@ -1,3 +1,7 @@
+VERSION 1.13.3
+---------------------
+    - The regulators can now be provided as a list with different regulators for each gene/feature.
+    
 VERSION 1.5.2
 ---------------------
     - Adding check for duplicated rownames (gene id/names)

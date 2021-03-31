@@ -7,7 +7,7 @@
   testthat::expect_equal(sum(weightMatrix < 0), 0)
   testthat::expect_equal(sum(diag(weightMatrix)), 0)
   testthat::expect_equal(sum(rownames(weightMatrix) == colnames(weightMatrix)), 20)
-  testthat::expect_equal(sum(rownames(weightMatrix) == sort(rownames(exprMatrix))), 20)
+  testthat::expect_equal(sum(rownames(weightMatrix) == rownames(exprMatrix)), 20)
 }
 
 test_that("GENIE3 tests", {
@@ -32,7 +32,7 @@ test_that("GENIE3 tests", {
 	testthat::expect_equal(sum(is.na(weightMatrix)), 0)
 	testthat::expect_equal(sum(diag(weightMatrix[,rownames(weightMatrix)])), 0)
 	# testthat::expect_equal(sum(rownames(weightMatrix) == colnames(weightMatrix)), 20)
-	testthat::expect_equal(sum(colnames(weightMatrix) == sort(rownames(exprMatrix))), 20)
+	testthat::expect_equal(sum(colnames(weightMatrix) == rownames(exprMatrix)), 20)
 
 	#### Regulators as name
 	regulators <- rownames(exprMatrix)[c(5,9)]
@@ -44,7 +44,7 @@ test_that("GENIE3 tests", {
 	testthat::expect_equal(sum(is.na(weightMatrix)), 0)
 	testthat::expect_equal(sum(diag(weightMatrix[,rownames(weightMatrix)])), 0)
 	# testthat::expect_equal(sum(rownames(weightMatrix) == colnames(weightMatrix)), 20)
-	testthat::expect_equal(sum(colnames(weightMatrix) == sort(rownames(exprMatrix))), 20)
+	testthat::expect_equal(sum(colnames(weightMatrix) == rownames(exprMatrix)), 20)
 
 	#### Targets as number
 	regulators <- c(2,4,6)
@@ -62,7 +62,15 @@ test_that("GENIE3 tests", {
 	#### Only one target (Note that the regulator is included, and will take all the weight...)
 	weightMatrix <- GENIE3(exprMatrix, regulators=2:3, targets=3)
 	testthat::expect_equal(ncol(weightMatrix), 1)
+	
+	#### Different regulators for each gene & return as list
+	regulatorsList <- list("Gene1"=rownames(exprMatrix)[1:10],
+	                       "Gene2"=rownames(exprMatrix)[10:20],
+	                       "Gene20"=rownames(exprMatrix)[15:20])
 
+	set.seed(123)
+	weightList <- GENIE3(exprMatrix, nCores=1, targets=names(regulatorsList), regulators=regulatorsList, returnMatrix=FALSE)
+	testthat::expect_equal(lengths(weightList), setNames(c(9,11,5),names(regulatorsList)))
 
 	### Other input classes:
 	eset <- Biobase::ExpressionSet(assayData=exprMatrix)
@@ -75,7 +83,6 @@ test_that("GENIE3 tests", {
 	# sce <- scater::newSCESet(countData=exprMatrix)
 	# testthat::expect_equal(class(GENIE3(sce)), "matrix")
 
-
 	### Multicore
 	# set.seed(123)
 	# weightMatrix_multicore1 <- GENIE3(exprMatrix, nCores=4)
@@ -84,5 +91,8 @@ test_that("GENIE3 tests", {
 	# testthat::expect_equal(weightMatrix_multicore1, weightMatrix_multicore2)
 	# 
 	# .checkGenie3_output(weightMatrix_multicore1, exprMatrix)
+	# set.seed(123)
+	# weightMat <- GENIE3(exprMatr, nCores=10, targets=names(regulatorsList), regulators=regulatorsList, returnMatrix=FALSE); weightMat
+	# 
 })
 
