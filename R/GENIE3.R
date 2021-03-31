@@ -146,7 +146,7 @@ function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", n
   colnames(weightMatrix) <- targetNames
 
   # compute importances for every target gene
-  if(nCores==1 && !foreach::getDoParRegistered())
+  if(nCores==1)
   {
     # serial computing
     if(verbose) message("Using 1 core.")
@@ -178,9 +178,9 @@ function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", n
       # requireNamespace("foreach"); requireNamespace("doRNG"); requireNamespace("doParallel")
 
       # parallel computing
-      if (!foreach::getDoParRegistered()) {
+      # if (!foreach::getDoParRegistered()) {
           doParallel::registerDoParallel(cores=nCores)
-      }
+      # }
       if(verbose) message(paste("\nUsing", foreach::getDoParWorkers(), "cores."))
 
       # weightMatrix.reg <- foreach::foreach(targetName=targetNames, .combine=cbind) %dorng%
@@ -289,8 +289,8 @@ function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", n
 
     if (is.character(regulators)){
       regulatorsInMatrix <- intersect(regulators, rownames(exprMatrix))
-      if(length(regulatorsInMatrix) == 0)
-        stop("The genes must contain at least one regulators")
+      if(length(regulatorsInMatrix) <2)
+        stop("Fewer than 2 regulators in the expression matrix (rownames).")
 
       if(length(regulatorsInMatrix) < length(regulators))
         warning("Only", length(regulatorsInMatrix), "out of", length(regulators), " candidate regulators (IDs/names) are in the expression matrix.")
