@@ -41,7 +41,9 @@
 #' 
 #' set.seed(123)
 #' weightList <- GENIE3(exprMatrix, nCores=1, targets=names(regulatorsList), regulators=regulatorsList, returnMatrix=FALSE)
-#'
+
+# @docType methods
+#' @rdname GENIE3
 #' @export
 setGeneric("GENIE3", signature="exprMatrix",
 function(exprMatrix, regulators=NULL, targets=NULL, 
@@ -51,6 +53,8 @@ function(exprMatrix, regulators=NULL, targets=NULL,
   standardGeneric("GENIE3")
 })
 
+#' @rdname GENIE3
+#' @aliases GENIE3,matrix-method
 #' @export
 setMethod("GENIE3", "matrix",
 function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", nTrees=1000, nCores=1, returnMatrix=TRUE, verbose=FALSE)
@@ -58,6 +62,8 @@ function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", n
   .GENIE3(exprMatrix=exprMatrix, regulators=regulators, targets=targets, treeMethod=treeMethod, K=K, nTrees=nTrees, nCores=nCores, returnMatrix=returnMatrix, verbose=verbose)
 })
 
+#' @rdname GENIE3
+#' @aliases GENIE3,SummarizedExperiment-method
 #' @export
 setMethod("GENIE3", "SummarizedExperiment",
 function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", nTrees=1000, nCores=1, returnMatrix=TRUE, verbose=FALSE)
@@ -67,6 +73,8 @@ function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", n
   .GENIE3(exprMatrix=exprMatrix, regulators=regulators, targets=targets, treeMethod=treeMethod, K=K, nTrees=nTrees, nCores=nCores, returnMatrix=returnMatrix, verbose=verbose)
 })
 
+#' @rdname GENIE3
+#' @aliases GENIE3,ExpressionSet-method
 #' @export
 setMethod("GENIE3", "ExpressionSet",
 function(exprMatrix, regulators=NULL, targets=NULL, treeMethod="RF", K="sqrt", nTrees=1000, nCores=1, returnMatrix=TRUE, verbose=FALSE)

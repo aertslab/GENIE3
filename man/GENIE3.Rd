@@ -2,9 +2,48 @@
 % Please edit documentation in R/GENIE3.R
 \name{GENIE3}
 \alias{GENIE3}
+\alias{GENIE3,matrix-method}
+\alias{GENIE3,SummarizedExperiment-method}
+\alias{GENIE3,ExpressionSet-method}
 \title{GENIE3}
 \usage{
 GENIE3(
+  exprMatrix,
+  regulators = NULL,
+  targets = NULL,
+  treeMethod = "RF",
+  K = "sqrt",
+  nTrees = 1000,
+  nCores = 1,
+  returnMatrix = TRUE,
+  verbose = FALSE
+)
+
+\S4method{GENIE3}{matrix}(
+  exprMatrix,
+  regulators = NULL,
+  targets = NULL,
+  treeMethod = "RF",
+  K = "sqrt",
+  nTrees = 1000,
+  nCores = 1,
+  returnMatrix = TRUE,
+  verbose = FALSE
+)
+
+\S4method{GENIE3}{SummarizedExperiment}(
+  exprMatrix,
+  regulators = NULL,
+  targets = NULL,
+  treeMethod = "RF",
+  K = "sqrt",
+  nTrees = 1000,
+  nCores = 1,
+  returnMatrix = TRUE,
+  verbose = FALSE
+)
+
+\S4method{GENIE3}{ExpressionSet}(
   exprMatrix,
   regulators = NULL,
   targets = NULL,
@@ -68,5 +107,4 @@ regulatorsList <- list("Gene1"=rownames(exprMatrix)[1:10],
 
 set.seed(123)
 weightList <- GENIE3(exprMatrix, nCores=1, targets=names(regulatorsList), regulators=regulatorsList, returnMatrix=FALSE)
-
 }
